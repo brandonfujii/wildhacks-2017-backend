@@ -1,0 +1,6 @@
+flow-typed/
+node_modules/
+*.log
+build/
+config/*.json
+.DS_Store

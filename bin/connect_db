@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+const mysql = require('mysql2')
+
+function createDbConnection(host, user, password) {
+    var connection = null; 
+
+    if (host && user && password) {
+        connection = mysql.createConnection({
+            host,
+            user,
+            password
+        });
+
+        connection.connect(function(err) {
+            if (err) throw err;
+            console.log(`Logged in as ${user}!\n`);
+        })
+    }
+
+    return connection;
+}
+
+module.exports = createDbConnection;

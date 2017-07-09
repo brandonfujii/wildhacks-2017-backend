@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+"use strict";
+
+const async = require('async');
+const databases = require('../config/sequelize.json');
+const config = require('config');
+const createDbConnection = require('./connect_db');
+
+var dbConfig = config.get('db');
+var connection = createDbConnection(dbConfig.host, dbConfig.user, dbConfig.password);
+
+async.forEachOf(databases, 
+    function(environment, key, done) {
+        var databaseName = (typeof environment.database == 'string') ? 
+                                environment.database : 
+                                key;
+        var authCommand = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
+
+        connection.query(
+            authCommand,
+            function(err, results, fields) {
+                if (err == null) {
+                    const timestamp = (new Date()).toUTCString();
+                    var status = `[${timestamp}]: `; 
+
+                    if (parseInt(results.warningStatus) <= 0) {
+                        status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+                    } else {
+                        status += `${databaseName} already exists.\n`;
+                    }
+
+                    console.log(status);
+                    done();
+                } else {
+                    console.error('Database Error:', err);
+                }
+            }
+        );
+    },
+    function (err) {
+        if (err) console.error(err);
+        connection.end();
+    }
+);
+
