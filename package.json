@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "DEBUG='api:*' node build",
     "db:init": "node_modules/.bin/sequelize init",
+    "db:create": "node bin/create_db",
     "db:migrate": "node_modules/.bin/sequelize db:migrate",
     "model:create": "node_modules/.bin/sequelize model:create"
   },

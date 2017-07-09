@@ -20,10 +20,6 @@ export default class App {
     }
 
     routes(): void {
-        this.express.use(function(req: $Request, res: $Response) {
-            res.json({ message: 'Hello Flow!' });
-        });
-
-        // userRoutes(this.express);
+        userRoutes(this.express);
     }
 }

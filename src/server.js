@@ -4,7 +4,7 @@ import express from 'express';
 import * as http from 'http';
 import debug from 'debug';
 import config from 'config';
-import App from '../app';
+import App from './app';
 
 const log = debug('api:server');
 

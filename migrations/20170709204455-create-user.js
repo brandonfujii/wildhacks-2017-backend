@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: function(queryInterface, Sequelize) {
-    return queryInterface.createTable('Users', {
+    return queryInterface.createTable('users', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -16,16 +16,13 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
+        allowNull: false,
         validate: {
-          isEmail: true,
-          notNull: true
+          isEmail: true
         }
       },
       password: {
-        type: Sequelize.STRING,
-        validate: {
-          notNull: true
-        }
+        type: Sequelize.STRING
       },
       privilege: {
         type: Sequelize.ENUM,

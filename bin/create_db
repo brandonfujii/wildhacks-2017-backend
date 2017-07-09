@@ -1,45 +1,58 @@
 #!/usr/bin/env node
 "use strict";
 
+const fs = require('fs');
+const path = require('path');
 const async = require('async');
-const databases = require('../config/sequelize.json');
 const config = require('config');
 const createDbConnection = require('./connect_db');
 
 var dbConfig = config.get('db');
-var connection = createDbConnection(dbConfig.host, dbConfig.user, dbConfig.password);
+var connection; 
 
-async.forEachOf(databases, 
-    function(environment, key, done) {
-        var databaseName = (typeof environment.database == 'string') ? 
-                                environment.database : 
-                                key;
-        var authCommand = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
+if (dbConfig) {
+    connection = createDbConnection(dbConfig.host, dbConfig.user, dbConfig.password);
+} else {
+    console.error('Must provide a valid db property in your configuration json file');
+    return; 
+}
 
-        connection.query(
-            authCommand,
-            function(err, results, fields) {
-                if (err == null) {
-                    const timestamp = (new Date()).toUTCString();
-                    var status = `[${timestamp}]: `; 
+if (fs.existsSync(path.resolve(__dirname, '../config/sequelize.json'))) {
+    const databases = require('../config/sequelize.json');
+    
+    async.forEachOf(databases, 
+        function(environment, key, done) {
+            var databaseName = (typeof environment.database == 'string') ? 
+                                    environment.database : 
+                                    key;
+            var authCommand = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
 
-                    if (parseInt(results.warningStatus) <= 0) {
-                        status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+            connection.query(
+                authCommand,
+                function(err, results, fields) {
+                    if (err == null) {
+                        const timestamp = (new Date()).toUTCString();
+                        var status = `[${timestamp}]: `; 
+
+                        if (parseInt(results.warningStatus) <= 0) {
+                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+                        } else {
+                            status += `${databaseName} already exists.\n`;
+                        }
+
+                        console.log(status);
+                        done();
                     } else {
-                        status += `${databaseName} already exists.\n`;
+                        console.error('Database Error:', err);
                     }
-
-                    console.log(status);
-                    done();
-                } else {
-                    console.error('Database Error:', err);
                 }
-            }
-        );
-    },
-    function (err) {
-        if (err) console.error(err);
-        connection.end();
-    }
-);
-
+            );
+        },
+        function (err) {
+            if (err) console.error(err);
+            connection.end();
+        }
+    );
+} else {
+    console.error('Must provide a sequelize.json file in the config directory');
+}

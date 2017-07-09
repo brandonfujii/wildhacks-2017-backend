@@ -3,8 +3,6 @@
 import bcrypt from 'bcryptjs';
 import Sequelize from 'sequelize';
 
-const NUM_SALTS = 12;
-
 export default function(
             sequelize: Sequelize, 
             DataTypes: Sequelize.DataTypes): Sequelize {
@@ -23,16 +21,13 @@ export default function(
         },
         email: {
             type: STRING,
+            allowNull: false,
             validate: {
                 isEmail: true,
-                notNull: true
             }
         },
         password: {
-            type: STRING,
-            validate: {
-                notNull: true
-            }
+            type: STRING
         },
         privilege: {
             type: ENUM,
@@ -43,17 +38,62 @@ export default function(
         tableName: 'users'
     });
 
-    function hashPassword(password: string): Promise<any> {
-        return bcrypt.genSaltAsync(NUM_SALTS)
-            .then(function(salt) {
-                return bcrypt.hashAsync(password, salt, null);
+    const DEFAULT_NUM_SALTS = 10;
+
+    function _genSalt(password: string, numSalts: number): Promise<Object> {
+        return new Promise(function(resolve, reject) {
+            bcrypt.genSalt(numSalts || DEFAULT_NUM_SALTS, function(err, salt) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({
+                        salt,
+                        password
+                    });
+                }
+            }); 
+        }); 
+    }
+
+    function _genHash(password: string, salt: string): Promise<Object> {
+        return new Promise(function(resolve, reject) {
+            bcrypt.hash(password, salt, null, function(err, hash) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({
+                        salt,
+                        password,
+                        hash
+                    });
+                }
+            });
+        })
+    }
+
+    function hashPassword(password: string): Promise<Object> {
+        return _genSalt(password, DEFAULT_NUM_SALTS) 
+            .then(function(result) {
+                const {
+                    salt,
+                    password
+                } = result;
+
+                return _genHash(password, salt);
+            })
+            .catch(function(err) {
+                console.error(err);
             });
     }
 
     User.beforeCreate(function(user, options) {
         return hashPassword(user.password)
             .then(function(hash) {
+                console.log(hash);
                 user.password = hash;
+            })
+            .catch(function(err) {
+                console.error(err);
             });
     });
 
