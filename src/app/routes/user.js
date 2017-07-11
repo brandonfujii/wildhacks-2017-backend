@@ -1,7 +1,7 @@
 // @flow
 
 import express from 'express';
-import userController from '../controllers/user_controller';
+import userController from '../controllers/user.controller';
 
 export default function(app: express$Application): void {
     app.post('/user/create', function(req: $Request, res: $Response) {
@@ -11,7 +11,9 @@ export default function(app: express$Application): void {
         } = req.body;
 
         console.log(email, password);
-        userController
+        let hello = userController
             .createUser({ email, password });
+
+        res.json({ hello });
     });
 }

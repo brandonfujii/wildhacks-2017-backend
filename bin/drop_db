@@ -1,0 +1,85 @@
+#!/usr/bin/env node
+'use strict';
+
+const async = require('async');
+const config = require('config');
+const argv = require('yargs')
+                .default({ all: false })
+                .usage('Usage:\n> $0 --all // Deletes all databases specified in sequelize.json\n\
+> $0 <database1> <database2> ... // Deletes specific databases')
+                .help('help')
+                .argv;
+const createDbConnection = require('./connect_db');
+const configExists = require('./utils').configExists;
+var connection = createDbConnection(config.get('db'));
+
+if (argv.all) {
+    if (configExists()) {
+        const databases = require('../config/sequelize.json');
+        
+        async.forEachOf(databases, 
+            function(environment, key, done) {
+                var databaseName = (typeof environment.database == 'string') ? 
+                                        environment.database : 
+                                        key;
+                var drop = `DROP DATABASE IF EXISTS ${databaseName}`;
+
+                connection.query(
+                    drop,
+                    function(err, results, fields) {
+                        if (err == null) {
+                            const timestamp = (new Date()).toUTCString();
+                            var status = `[${timestamp}]: `; 
+
+                            if (parseInt(results.warningStatus) <= 0) {
+                                status += `${databaseName} deleted. ${results.affectedRows} row(s) affected.\n`;
+                            } else {
+                                status += `${databaseName} does not exist.\n`;
+                            }
+
+                            console.log(status);
+                            done();
+                        } else {
+                            throw new Error(err);
+                        }
+                    }
+                );
+            },
+            function(err) {
+                if (err) throw new Error(err);
+                connection.end();
+            }
+        );
+    }
+} else {
+    async.forEach(argv._,
+        function(databaseName, done) {
+            var drop = `DROP DATABASE IF EXISTS ${databaseName}`;
+
+            connection.query(
+                drop,
+                function(err, results, fields) {
+                     if (err == null) {
+                        const timestamp = (new Date()).toUTCString();
+                        var status = `[${timestamp}]: `; 
+
+                        if (parseInt(results.warningStatus) <= 0) {
+                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+                        } else {
+                            status += `${databaseName} does not exist.\n`;
+                        }
+
+                        console.log(status);
+                        done();
+                    } else {
+                        throw new Error(err);
+                    }
+                }
+            )
+        },
+        function(err) {
+            if (err) throw new Error(err);
+            connection.end();
+        }
+    );
+}

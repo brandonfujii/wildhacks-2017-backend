@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+function configExists() {
+    if (fs.existsSync(path.resolve(__dirname, '../config/sequelize.json'))) {
+        return true;
+    }
+    console.error('Must provide a sequelize.json file in the config directory');
+    return false;
+}
+
+module.exports = {
+    configExists
+};

@@ -24,6 +24,10 @@ export default function(
             allowNull: false,
             validate: {
                 isEmail: true,
+            },
+            unique: {
+                args: true,
+                msg: 'Email address is already in use'
             }
         },
         password: {
@@ -57,7 +61,8 @@ export default function(
 
     function _genHash(password: string, salt: string): Promise<Object> {
         return new Promise(function(resolve, reject) {
-            bcrypt.hash(password, salt, null, function(err, hash) {
+            return bcrypt.hash(password, salt, function(err, hash) {
+                console.log(err, hash);
                 if (err) {
                     reject(err);
                 } else {
@@ -88,9 +93,9 @@ export default function(
 
     User.beforeCreate(function(user, options) {
         return hashPassword(user.password)
-            .then(function(hash) {
-                console.log(hash);
-                user.password = hash;
+            .then(function(result) {
+                console.log(result);
+                user.password = result.hash;
             })
             .catch(function(err) {
                 console.error(err);

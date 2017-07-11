@@ -1,23 +1,13 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const async = require('async');
 const config = require('config');
 const createDbConnection = require('./connect_db');
+const configExists = require('./utils').configExists;
+const connection = createDbConnection(config.get('db'));
 
-var dbConfig = config.get('db');
-var connection; 
-
-if (dbConfig) {
-    connection = createDbConnection(dbConfig.host, dbConfig.user, dbConfig.password);
-} else {
-    console.error('Must provide a valid db property in your configuration json file');
-    return; 
-}
-
-if (fs.existsSync(path.resolve(__dirname, '../config/sequelize.json'))) {
+if (configExists()) {
     const databases = require('../config/sequelize.json');
     
     async.forEachOf(databases, 
@@ -25,10 +15,10 @@ if (fs.existsSync(path.resolve(__dirname, '../config/sequelize.json'))) {
             var databaseName = (typeof environment.database == 'string') ? 
                                     environment.database : 
                                     key;
-            var authCommand = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
+            var create = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
 
             connection.query(
-                authCommand,
+                create,
                 function(err, results, fields) {
                     if (err == null) {
                         const timestamp = (new Date()).toUTCString();
@@ -43,16 +33,14 @@ if (fs.existsSync(path.resolve(__dirname, '../config/sequelize.json'))) {
                         console.log(status);
                         done();
                     } else {
-                        console.error('Database Error:', err);
+                        throw new Error(err);
                     }
                 }
             );
         },
-        function (err) {
-            if (err) console.error(err);
+        function(err) {
+            if (err) throw new Error(err);
             connection.end();
         }
     );
-} else {
-    console.error('Must provide a sequelize.json file in the config directory');
 }

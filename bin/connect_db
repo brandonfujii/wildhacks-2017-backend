@@ -1,24 +1,34 @@
 #!/usr/bin/env node
+'use strict';
 
-const mysql = require('mysql2')
+const mysql = require('mysql2');
 
-function createDbConnection(host, user, password) {
+function createDbConnection(config) {
     var connection = null; 
 
-    if (host && user && password) {
-        connection = mysql.createConnection({
-            host,
-            user,
-            password
-        });
+    if (config) {
+        var host = config.host,
+            user = config.user,
+            password = config.password;
 
-        connection.connect(function(err) {
-            if (err) throw err;
-            console.log(`Logged in as ${user}!\n`);
-        })
+        if (host && user && password) {
+            connection = mysql.createConnection({
+                host,
+                user,
+                password
+            });
+
+            connection.connect(function(err) {
+                if (err) throw new Error(err);
+                console.log(`Logged in as ${user}!\n`);
+            });
+
+            return connection;
+        }
+
     }
 
-    return connection;
+    throw new Error('Must provide a valid `db` property {host, user, password} in your configuration json file');
 }
 
 module.exports = createDbConnection;
