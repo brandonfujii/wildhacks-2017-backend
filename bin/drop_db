@@ -3,7 +3,8 @@
 
 const async = require('async');
 const config = require('config');
-const argv = require('yargs')
+const yargs = require('yargs');
+const argv = yargs
                 .default({ all: false })
                 .usage('Usage:\n> $0 --all // Deletes all databases specified in sequelize.json\n\
 > $0 <database1> <database2> ... // Deletes specific databases')
@@ -28,13 +29,12 @@ if (argv.all) {
                     drop,
                     function(err, results, fields) {
                         if (err == null) {
-                            const timestamp = (new Date()).toUTCString();
-                            var status = `[${timestamp}]: `; 
+                            var status = '> ';
 
                             if (parseInt(results.warningStatus) <= 0) {
-                                status += `${databaseName} deleted. ${results.affectedRows} row(s) affected.\n`;
+                                status += `${databaseName} deleted. ${results.affectedRows} row(s) affected.`;
                             } else {
-                                status += `${databaseName} does not exist.\n`;
+                                status += `${databaseName} does not exist.`;
                             }
 
                             console.log(status);
@@ -47,12 +47,20 @@ if (argv.all) {
             },
             function(err) {
                 if (err) throw new Error(err);
+                console.log('> Done. Closing connection...\n');
                 connection.end();
             }
         );
     }
 } else {
-    async.forEach(argv._,
+    var databases = argv._;
+
+    if (databases.length < 1) {
+        yargs.showHelp();
+        process.exit(0);
+    }
+
+    async.forEach(databases,
         function(databaseName, done) {
             var drop = `DROP DATABASE IF EXISTS ${databaseName}`;
 
@@ -60,13 +68,12 @@ if (argv.all) {
                 drop,
                 function(err, results, fields) {
                      if (err == null) {
-                        const timestamp = (new Date()).toUTCString();
-                        var status = `[${timestamp}]: `; 
+                        var status = '> ';
 
                         if (parseInt(results.warningStatus) <= 0) {
-                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.`;
                         } else {
-                            status += `${databaseName} does not exist.\n`;
+                            status += `${databaseName} does not exist.`;
                         }
 
                         console.log(status);
@@ -79,6 +86,7 @@ if (argv.all) {
         },
         function(err) {
             if (err) throw new Error(err);
+            console.log('> Done. Closing connection...\n');
             connection.end();
         }
     );

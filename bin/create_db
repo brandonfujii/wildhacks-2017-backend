@@ -21,13 +21,12 @@ if (configExists()) {
                 create,
                 function(err, results, fields) {
                     if (err == null) {
-                        const timestamp = (new Date()).toUTCString();
-                        var status = `[${timestamp}]: `; 
+                        var status = '> '; 
 
                         if (parseInt(results.warningStatus) <= 0) {
-                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.\n`;
+                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.`;
                         } else {
-                            status += `${databaseName} already exists.\n`;
+                            status += `${databaseName} already exists.`;
                         }
 
                         console.log(status);
@@ -40,6 +39,7 @@ if (configExists()) {
         },
         function(err) {
             if (err) throw new Error(err);
+            console.log('> Done. Closing connection...\n');
             connection.end();
         }
     );

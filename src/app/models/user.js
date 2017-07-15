@@ -5,7 +5,7 @@ import Sequelize from 'sequelize';
 
 export default function(
             sequelize: Sequelize, 
-            DataTypes: Sequelize.DataTypes): Sequelize {
+            DataTypes: Sequelize.DataTypes): Sequelize.Model {
 
     const {
         STRING,
@@ -24,10 +24,6 @@ export default function(
             allowNull: false,
             validate: {
                 isEmail: true,
-            },
-            unique: {
-                args: true,
-                msg: 'Email address is already in use'
             }
         },
         password: {
@@ -35,71 +31,67 @@ export default function(
         },
         privilege: {
             type: ENUM,
-            values: ['admin', 'user']
+            values: ['admin', 'user'],
+            defaultValue: 'user'
         }
     }, {
         timestamps: true,
-        tableName: 'users'
+        tableName: 'users',
+        indexes: [{ unique: true, fields: ['email'] }]
     });
 
-    const DEFAULT_NUM_SALTS = 10;
+    User.prototype.verifyPassword = async function(candidatePassword: string): Promise<boolean> {
+        return bcrypt.compare(candidatePassword, this.hash, (err, isMatch) => {
+            if (err) {
+                throw new Error(err);
+            }
+            return isMatch;
+        });
+    };
 
-    function _genSalt(password: string, numSalts: number): Promise<Object> {
-        return new Promise(function(resolve, reject) {
-            bcrypt.genSalt(numSalts || DEFAULT_NUM_SALTS, function(err, salt) {
+    const _createSalt = async function(numSalts: number = 10): Promise<string> {
+        return new Promise((resolve, reject) => {
+            bcrypt.genSalt(numSalts, (err, salt) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve({
-                        salt,
-                        password
-                    });
+                    resolve(salt);
                 }
             }); 
         }); 
     }
 
-    function _genHash(password: string, salt: string): Promise<Object> {
-        return new Promise(function(resolve, reject) {
-            return bcrypt.hash(password, salt, function(err, hash) {
-                console.log(err, hash);
+    const _createHash = async function(password: string, salt: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            bcrypt.hash(password, salt, (err, hash) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve({
-                        salt,
-                        password,
-                        hash
-                    });
+                    resolve(hash);
                 }
             });
         })
     }
 
-    function hashPassword(password: string): Promise<Object> {
-        return _genSalt(password, DEFAULT_NUM_SALTS) 
-            .then(function(result) {
-                const {
-                    salt,
-                    password
-                } = result;
-
-                return _genHash(password, salt);
+    const hashPassword = async function(password: string): Promise<string> {
+        return _createSalt() 
+            .then(salt => {
+                return _createHash(password, salt);
             })
-            .catch(function(err) {
+            .catch(err => {
                 console.error(err);
             });
     }
 
-    User.beforeCreate(function(user, options) {
-        return hashPassword(user.password)
-            .then(function(result) {
-                console.log(result);
-                user.password = result.hash;
-            })
-            .catch(function(err) {
-                console.error(err);
-            });
+    User.beforeCreate(async function(user: User, options: User.options): Promise<void> {
+        let hash = await hashPassword(user.password);
+
+        if (hash) {
+            user.password = hash;
+        } else {
+            throw new Error('Unable to create user');
+            // todo: create custom validation error
+        }
     });
 
     return User;

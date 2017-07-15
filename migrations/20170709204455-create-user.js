@@ -19,10 +19,6 @@ module.exports = {
         allowNull: false,
         validate: {
           isEmail: true
-        },
-        unique: {
-          args: true,
-          msg: 'Email address is already in use'
         }
       },
       password: {
@@ -30,7 +26,8 @@ module.exports = {
       },
       privilege: {
         type: Sequelize.ENUM,
-        values: ['admin', 'user']
+        values: ['admin', 'user'],
+        defaultValue: 'user'
       },
       createdAt: {
         allowNull: false,
@@ -40,9 +37,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    })
+    .then(function() {
+      return queryInterface.addConstraint('users', ['email'], {
+        type: 'unique'
+      });
     });
+
   },
   down: function(queryInterface, Sequelize) {
-    return queryInterface.dropTable('Users');
+    return queryInterface.dropTable('users');
   }
 };

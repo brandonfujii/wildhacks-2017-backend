@@ -1,37 +1,33 @@
 // @flow
 
+import Sequelize from 'sequelize';
 import models from '../models';
 import debug from 'debug';
 
-const User = models.user;
 const log = debug('api:controller:user');
 
-function createUser(userOptions: Object): Promise<models.user | null> {
+
+const createUser = async (options: Object) => {
     let {
         firstName,
         lastName,
         email,
         password,
         privilege
-    } = userOptions;
+    } = options;
 
-    if (email && password) {
-        console.log(email, password);
-        return User
-            .create({
-                email,
-                password
-            })
-            .then(function(user) {
-                return user;
-            })
-            .catch(function(err) {
-                console.error("Cannot create user", err);
-            });
+    const t = await models.sequelize.transaction();
+
+    try {
+        let user = await models.user.create({ email, password },
+            { transaction: t });
+        await t.commit();
+        return user;
+    } catch(err) {
+        await t.rollback();
+        console.error(err);
+        return err;
     }
-
-    return Promise.resolve(null);
-
 }
 
 export default {

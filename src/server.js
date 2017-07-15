@@ -7,25 +7,17 @@ import config from 'config';
 import App from './app';
 
 const log = debug('api:server');
-
-const DEFAULT_PORT: number = 1851;
 const port: number = normalizePort(config.get('port'));
-
-const app = new App();
-const server: http.Server = http.createServer(app.express);
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+const DEFAULT_PORT: number = 1851;
 
 declare interface ErrnoError extends Error {
-  errno?: number;
-  code?: string;
-  path?: string;
-  syscall?: string;
+    errno?: number,
+    code?: string,
+    path?: string,
+    syscall?: string
 }
 
-function normalizePort(p: any): number { 
+function normalizePort(p: number | string): number { 
     let port: number = (typeof p === 'string') ? parseInt(p) : p;
 
     if (port && isNaN(port)) return port;
@@ -34,9 +26,11 @@ function normalizePort(p: any): number {
     return DEFAULT_PORT;
 }
 
-function onError(error: ErrnoError): void {
+function onError(error: ErrnoError) {
     if (error.syscall !== 'listen') throw error;
-    let bind: string = (typeof port === 'string') ? `Pipe ${port}` : `Port ${port.toString()}`;
+    let bind: string = (typeof port === 'string') ? 
+                        `Pipe ${port}` :
+                        `Port ${port.toString()}`;
 
     switch (error.code) {
         case 'EACCES':
@@ -52,8 +46,19 @@ function onError(error: ErrnoError): void {
   }
 }
 
-function onListening(): void {
-    let addr: string | Object = server.address();
-    let bind: string = (typeof addr === 'string') ? `pipe ${addr}` : `port :${addr.port}`;
+function onListening() {
+    let addr = this.address();
+    let bind: string = (typeof addr === 'string') ?
+                        `pipe ${addr}` :
+                        `port :${addr.port}`;
     log(`Listening on ${bind}...`);
+}
+
+export default function() {
+    const app = new App();
+    const server: http.Server = http.createServer(app.express);
+
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
 }

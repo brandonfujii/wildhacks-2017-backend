@@ -1,9 +1,13 @@
 // @flow
 
 import express from 'express';
+import helmet from 'helmet';
+import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
-import userRoutes from './routes/user';
+
+// Routes
+import { userRoutes } from './routes';
 
 export default class App {
     express: express$Application;
@@ -14,12 +18,27 @@ export default class App {
         this.routes();
     }
 
-    middleware(): void {
-        this.express.use(bodyParser.json());
-        this.express.use(bodyParser.urlencoded({extended: false}));
+    middleware() {
+        this.express.use(bodyParser.json({ 
+            type: 'application/*',
+            limit: '30mb'
+        }));
+        this.express.use(bodyParser.urlencoded({ extended: true }));
+        this.express.use(methodOverride());
+        this.express.use(helmet.xssFilter());
+        this.express.use(helmet.noSniff());
+        this.express.use(helmet.ieNoOpen());
+        this.express.use(helmet.hidePoweredBy({ 
+            setTo: 'PHP 5.6.0' 
+        }));
     }
 
-    routes(): void {
+    routes() {
         userRoutes(this.express);
+
+        // Test ping
+        this.express.get('/ping', (req: $Request, res: $Response) => {
+            res.send('pong');
+        });
     }
 }

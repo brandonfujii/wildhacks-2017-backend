@@ -20,7 +20,7 @@ function createDbConnection(config) {
 
             connection.connect(function(err) {
                 if (err) throw new Error(err);
-                console.log(`Logged in as ${user}!\n`);
+                console.log(`> Logged in as ${user}!`);
             });
 
             return connection;
