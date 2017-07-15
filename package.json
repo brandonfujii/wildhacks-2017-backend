@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "DEBUG='api:*' node build",
+    "build": "gulp; DEBUG='api:*' node build",
     "db:init": "node_modules/.bin/sequelize init",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db --all",

@@ -2,12 +2,9 @@
 
 import Sequelize from 'sequelize';
 import models from '../models';
-import debug from 'debug';
+import { isEmail, to } from '../utils';
 
-const log = debug('api:controller:user');
-
-
-const createUser = async (options: Object) => {
+const createUser = async function(options: Object): Promise<models.user | void> {
     let {
         firstName,
         lastName,
@@ -25,11 +22,48 @@ const createUser = async (options: Object) => {
         return user;
     } catch(err) {
         await t.rollback();
-        console.error(err);
-        return err;
     }
+};
+
+const getUserByIdAndEmail = async function(id: number, email: string): Promise<models.user> {
+    return new Promise(async (resolve, reject) => {
+        const { err, data } = await to(models.user.findOne({ where: { email, id }}));
+
+        if (err != null) {
+            reject(err);
+        }
+
+        resolve(data ? data : null);
+    });
+};
+
+const getUserByEmail = async function(email: string): Promise<models.user> {
+    return new Promise(async (resolve, reject) => {
+        const { err, data } = await to(models.user.findOne({ where: { email } }));
+
+        if (err != null) {
+            reject(err);
+        }
+
+        resolve(data ? data : null);
+    });
+};
+
+const getUserById = async function(id: number): Promise<models.user> {
+    return new Promise(async (resolve, reject) => {
+        const { err, data } = await to(models.user.findOne({ where: { id } }));
+
+        if (err != null) {
+            reject(err);
+        }
+
+        resolve(data ? data : null);
+    });
 }
 
 export default {
-    createUser
+    createUser,
+    getUserByIdAndEmail,
+    getUserByEmail,
+    getUserById
 };

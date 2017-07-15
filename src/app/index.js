@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
 
 // Routes
-import { userRoutes } from './routes';
+import { userRoutes, authRoutes } from './routes';
 
 export default class App {
     express: express$Application;
@@ -35,6 +35,7 @@ export default class App {
 
     routes() {
         userRoutes(this.express);
+        authRoutes(this.express);
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {
