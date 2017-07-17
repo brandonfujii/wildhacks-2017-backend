@@ -2,9 +2,13 @@
 
 import Sequelize from 'sequelize';
 import models from '../models';
-import { isEmail, to } from '../utils';
+import { to } from '../utils';
 
-const createUser = async function(options: Object): Promise<models.user | void> {
+const userAttributes = {
+    exclude: ['password']
+};
+
+const createUser = async function(options: Object): Promise<models.user> {
     let {
         firstName,
         lastName,
@@ -13,56 +17,58 @@ const createUser = async function(options: Object): Promise<models.user | void> 
         privilege
     } = options;
 
-    const t = await models.sequelize.transaction();
-
-    try {
-        let user = await models.user.create({ email, password },
-            { transaction: t });
-        await t.commit();
-        return user;
-    } catch(err) {
-        await t.rollback();
-    }
-};
-
-const getUserByIdAndEmail = async function(id: number, email: string): Promise<models.user> {
     return new Promise(async (resolve, reject) => {
-        const { err, data } = await to(models.user.findOne({ where: { email, id }}));
-
-        if (err != null) {
+        const t = await models.sequelize.transaction();
+        let user; 
+        try {
+            user = await models.user
+                            .create(options, { transaction: t });
+            await t.commit();
+        } catch(err) {
+            await t.rollback();
             reject(err);
         }
+        resolve(user);
+    });
+};
 
-        resolve(data ? data : null);
+const getUsers = async function(pageNumber: number = 1, limit: number = 10): Promise<Object> {
+    const offset = pageNumber < 1 ? 0 : --pageNumber * limit; // zero-index page number
+
+    return models.user.findAll({
+        limit,
+        offset,
+        attributes: userAttributes
+    });
+}
+
+const getUserByIdAndEmail = async function(id: number, email: string): Promise<models.user> {
+    return models.user.findOne({
+        where: {
+            email,
+            id
+        },
+        attributes: userAttributes
     });
 };
 
 const getUserByEmail = async function(email: string): Promise<models.user> {
-    return new Promise(async (resolve, reject) => {
-        const { err, data } = await to(models.user.findOne({ where: { email } }));
-
-        if (err != null) {
-            reject(err);
-        }
-
-        resolve(data ? data : null);
+    return models.user.findOne({ 
+        where: { email },
+        attributes: userAttributes
     });
 };
 
 const getUserById = async function(id: number): Promise<models.user> {
-    return new Promise(async (resolve, reject) => {
-        const { err, data } = await to(models.user.findOne({ where: { id } }));
-
-        if (err != null) {
-            reject(err);
-        }
-
-        resolve(data ? data : null);
+    return models.user.findOne({ 
+        where: { id },
+        attributes: userAttributes
     });
 }
 
 export default {
     createUser,
+    getUsers,
     getUserByIdAndEmail,
     getUserByEmail,
     getUserById

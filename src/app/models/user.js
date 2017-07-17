@@ -23,7 +23,11 @@ export default function(
             type: STRING,
             allowNull: false,
             validate: {
-                isEmail: true,
+                isEmail: true
+            },
+            unique: {
+                args: true,
+                msg: 'Email must be unique'
             }
         },
         password: {

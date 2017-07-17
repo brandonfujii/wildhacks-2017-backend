@@ -5,6 +5,10 @@ import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
+import {
+    BadRequestError,
+    EntityValidationError
+} from './errors';
 
 // Routes
 import { userRoutes, authRoutes } from './routes';
@@ -41,5 +45,11 @@ export default class App {
         this.express.get('/ping', (req: $Request, res: $Response) => {
             res.send('pong');
         });
+
+        // Handle synchronous errors
+        this.express.use((err: Object, req: $Request, res: $Response, next: express$NextFunction) => {
+            res.status(err.statusCode || 500);
+            return res.send(err);
+        })
     }
 }

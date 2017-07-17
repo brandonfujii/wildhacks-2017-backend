@@ -1,16 +1,27 @@
 // @flow
 
+import Sequelize from 'sequelize';
 import express from 'express';
 import userController from '../controllers/user.controller';
 import debug from 'debug';
-import { isEmail, to } from '../utils';
+
+import { 
+    to,
+    wrap,
+    isEmail
+} from '../utils';
+import {
+    InternalServerError,
+    BadRequestError,
+    EntityValidationError
+} from '../errors';
 
 const log = debug('api:user');
 
 export default function(app: express$Application) {
     let userRouter = express.Router();
 
-    userRouter.post('/create', async (req: $Request, res: $Response) => {
+    userRouter.post('/create', wrap(async (req: $Request, res: $Response) => {
         const {
             firstName,
             lastName,
@@ -19,18 +30,46 @@ export default function(app: express$Application) {
             privilege
         } = req.body;
 
-        if (email && password) {
-            let user = await userController
-                                .createUser({ email, password });
-            res.json({ user });
-        } else {
-            res.status(500).send("Blah");
-        }
-    });
+        if (isEmail(email) && password) {
+            let { err, data } = await to(userController
+                                .createUser(req.body));
+            if (err != null) {
+                if (err instanceof Sequelize.ValidationError) {
+                   throw new EntityValidationError(null, err.errors);
+                }
 
-    userRouter.get('/', async (req: $Request, res: $Response) => {
+                throw new InternalServerError(null);
+            }
+
+            res.json({ user: data });
+
+        } else {
+            throw new BadRequestError('You must supply a valid email and password');
+        }
+    }));
+
+    userRouter.get('/all', wrap(async (req: $Request, res: $Response) => {
+        let pageNumber = parseInt(req.query.page);
+
+        if (!pageNumber || pageNumber < 1) {
+            res.status(400).json('Please supply a valid integer page number greater than 1');
+        }
+
+        const { err, data } = await to(userController.getUsers(pageNumber));
+        
+        if (err != null) {
+            res.status(500).json('Something went wrong. Cannot retrieve users');
+        }
+
+        res.json({ 
+            page: pageNumber,
+            users: data ? data : [] 
+        });
+    }));
+
+    userRouter.get('/', wrap(async (req: $Request, res: $Response) => {
         const email = req.query.email;
-        const userId = parseInt(req.query.id, 10);
+        const userId = parseInt(req.query.id);
         let error, user;
 
         if (email && userId) {
@@ -40,7 +79,7 @@ export default function(app: express$Application) {
             user = data; 
         } else {
             if (!email && !userId) {
-                res.status(500).send('Please supply either a valid email or id parameter');
+                res.status(400).send('Please supply either a valid email or id parameter');
             }
 
             if (email) {
@@ -68,7 +107,7 @@ export default function(app: express$Application) {
         } else {
             res.status(404).send('User does not exist');
         }
-    });
+    }));
 
     app.use('/user', userRouter);
 }

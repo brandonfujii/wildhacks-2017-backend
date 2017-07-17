@@ -20,7 +20,8 @@
     "flowtype/no-primitive-constructor-types": 2,
     "flowtype/no-types-missing-file-annotation": 2,
     "flowtype/no-weak-types": [2, {
-        "Object": false
+        "Object": false,
+        "Function": false
     }],
     "flowtype/object-type-delimiter": [
       2,
