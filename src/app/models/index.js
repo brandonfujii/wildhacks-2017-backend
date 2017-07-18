@@ -3,8 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
+import _ from 'lodash';
 import debug from 'debug';
-import nconf from 'nconf';
 
 const log = debug('api:db');
 const basename: string = path.basename(module.filename);
@@ -21,7 +21,7 @@ type DatabaseConfigType = {
     dialect: string
 };
 
-function configureDatabase(config: DatabaseConfigType): Sequelize {
+const configureDatabase = function(config: DatabaseConfigType): Sequelize {
     let database: Sequelize;
 
     if (config.use_env_variable) {
@@ -49,14 +49,23 @@ fs
         return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
     })
     .forEach(file => {
-        var model = sequelize['import'](path.join(__dirname, file));
+        let model = sequelize['import'](path.join(__dirname, file));
         db[model.name] = model;
     });
 
+const toJSON = function(): Object {
+    let body = Object.assign({}, this.get());
+    return _.mapKeys(body, (v, k) => _.camelCase(k));
+}
+
 Object.keys(db).forEach(modelName => {
-    if (db[modelName].associate) {
-        db[modelName].associate(db);
+    let model = db[modelName];
+
+    if (model.associate) {
+        model.associate(db);
     }
+    
+    model.prototype.toJSON = toJSON;
 });
 
 db.sequelize = sequelize;

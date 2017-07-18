@@ -1,18 +1,20 @@
 // @flow
 
 // Base Error
-import BaseError from './BaseError';
+import BaseError from './base.error';
 
 // Client Errors
-import BadRequestError from './BadRequestError';
-import EntityValidationError from './EntityValidationError';
+import BadRequestError from './bad-request.error';
+import EntityValidationError from './entity-validation.error';
 
 // Server Errors
-import InternalServerError from './InternalServerError';
+import InternalServerError from './internal-server.error';
+import NotFoundError from './not-found.error';
 
 module.exports = {
     BaseError,
     BadRequestError,
     EntityValidationError,
-    InternalServerError
+    InternalServerError,
+    NotFoundError
 };

@@ -1,7 +1,7 @@
 // @flow
 
 import Sequelize from 'sequelize';
-import BadRequestError from './BadRequestError';
+import BadRequestError from './bad-request.error';
 
 type ValidationErrorType = {
     message: string,

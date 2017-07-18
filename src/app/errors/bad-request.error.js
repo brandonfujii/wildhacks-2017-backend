@@ -1,6 +1,6 @@
 // @flow
 
-import BaseError from './BaseError';
+import BaseError from './base.error';
 
 export default class BadRequestError extends BaseError {
     constructor(msg: ?string) {

@@ -3,21 +3,32 @@
 import bcrypt from 'bcryptjs';
 import Sequelize from 'sequelize';
 
+import {
+    InternalServerError
+} from '../errors';
+
 export default function(
             sequelize: Sequelize, 
             DataTypes: Sequelize.DataTypes): Sequelize.Model {
 
     const {
         STRING,
-        ENUM
+        ENUM,
+        INTEGER
     } = DataTypes;
 
-    const User = sequelize.define('user', {
-        firstName: {
-            type: STRING
+    const User = sequelize.define('User', {
+        first_name: {
+            type: STRING,
+            validate: {
+                isAlpha: true
+            }
         },
-        lastName: {
-            type: STRING
+        last_name: {
+            type: STRING,
+            validate: {
+                isAlpha: true
+            }
         },
         email: {
             type: STRING,
@@ -36,20 +47,39 @@ export default function(
         privilege: {
             type: ENUM,
             values: ['admin', 'user'],
-            defaultValue: 'user'
+            defaultValue: 'user',
+            validate: {
+                isIn: {
+                    args: [['admin', 'user']],
+                    msg: 'Must be a valid privilege'
+                }
+            }
+        },
+        token_id: {
+            type: INTEGER
         }
     }, {
         timestamps: true,
-        tableName: 'users',
-        indexes: [{ unique: true, fields: ['email'] }]
+        underscored: true,
+        indexes: [{ unique: true, fields: ['email'] }],
+        tableName: 'users'
     });
 
+    // Class Methods
+    User.associate = function(models: Object) {
+        User.hasOne(models.Token);
+    }
+
+    // Instance Methods
     User.prototype.verifyPassword = async function(candidatePassword: string): Promise<boolean> {
-        return bcrypt.compare(candidatePassword, this.hash, (err, isMatch) => {
-            if (err) {
-                throw new Error(err);
-            }
-            return isMatch;
+        return new Promise((resolve, reject) => {
+            return bcrypt.compare(candidatePassword, this.hash, (err, isMatch) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(isMatch);
+                }
+            });
         });
     };
 
@@ -87,14 +117,14 @@ export default function(
             });
     }
 
+    // Hooks
     User.beforeCreate(async function(user: User, options: User.options): Promise<void> {
         let hash = await hashPassword(user.password);
 
         if (hash) {
             user.password = hash;
         } else {
-            throw new Error('Unable to create user');
-            // todo: create custom validation error
+            throw new InternalServerError('Unable to create user right now. Please try again later');
         }
     });
 
