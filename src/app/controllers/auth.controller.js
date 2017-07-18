@@ -8,6 +8,16 @@ import models from '../models';
 import tokenController from './token.controller';
 import { isEmail, to } from '../utils';
 
+
+/** 
+ * Creates and returns a user instance based on given options
+ * @param {object}            options
+ * @param {String|undefined}  options.firstName
+ * @param {String|undefined}  options.lastName 
+ * @param {String}            options.email      
+ * @param {String}            options.password    
+ * @param {"admin"|"user"}    options.privilege   
+ */
 const createUser = async function(options: Object): Promise<models.User> {
     let {
         firstName,
@@ -92,6 +102,35 @@ type TokenPairType = {
     token: models.Token
 };
 
+const createToken = async function(user: models.User, token: string): Promise<TokenPairType> {
+    return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+        let tokenInstance;
+        let updatedUser;
+
+        try {
+            tokenInstance = await models.Token.create({
+                user_id: user.id,
+                value: token
+            });
+
+            updatedUser = await user.update({
+                token_id: tokenInstance.id
+            });
+
+            await t.commit();
+        } catch(err) {
+            await t.rollback();
+            reject(err);
+        }
+
+        resolve({
+            user: updatedUser,
+            token: tokenInstance
+        });
+    });
+}
+
 const checkToken = async function(user: models.User): Promise<TokenPairType> {
     return new Promise(async (resolve, reject) => {
         let {
@@ -142,35 +181,6 @@ const checkToken = async function(user: models.User): Promise<TokenPairType> {
                 resolve(tokenPair);
             }
         }
-    });
-}
-
-const createToken = async function(user: models.User, token: string): Promise<TokenPairType> {
-    return new Promise(async (resolve, reject) => {
-        const t = await models.sequelize.transaction();
-        let tokenInstance;
-        let updatedUser;
-
-        try {
-            tokenInstance = await models.Token.create({
-                user_id: user.id,
-                value: token
-            });
-
-            updatedUser = await user.update({
-                token_id: tokenInstance.id
-            });
-
-            await t.commit();
-        } catch(err) {
-            await t.rollback();
-            reject(err);
-        }
-
-        resolve({
-            user: updatedUser,
-            token: tokenInstance
-        });
     });
 }
 
