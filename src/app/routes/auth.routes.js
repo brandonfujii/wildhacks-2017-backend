@@ -12,7 +12,8 @@ import { wrap } from '../middleware';
 import {
     EntityValidationError,
     InternalServerError,
-    BadRequestError
+    BadRequestError,
+    LoginError
 } from '../errors';
 
 const log = debug('api:auth');
@@ -65,7 +66,7 @@ export default function(app: express$Application) {
             } = await to(userController.getUserByEmail(email));
 
             if (err != null) {
-                log(err);
+                throw new LoginError();
             }
 
             if (user) {
@@ -75,28 +76,26 @@ export default function(app: express$Application) {
                 } = await to(authController.verifyUser(user, password));
 
                 if (err != null) {
-                    log(err);
+                    throw new LoginError();
                 }
 
                 if (verifiedUser) {
                     let { 
                         err,
-                        data: authenticatedUser 
-                    } = await to(authController.createToken(verifiedUser));
+                        data: tokenPair 
+                    } = await to(authController.checkToken(verifiedUser));
 
                     if (err != null) {
-                        log(err);
+                        throw new LoginError();
                     }
 
-                    if (authenticatedUser) {
-                        res.json({
-                            user: authenticatedUser 
-                        });
+                    if (tokenPair) {
+                        res.json(tokenPair);
                     }
                 }
             } 
 
-            throw new BadRequestError('Login failed');
+            throw new LoginError();
 
         } else {
             throw new BadRequestError('You must supply a valid email and password');

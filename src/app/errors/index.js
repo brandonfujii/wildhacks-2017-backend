@@ -10,11 +10,13 @@ import EntityValidationError from './entity-validation.error';
 // Server Errors
 import InternalServerError from './internal-server.error';
 import NotFoundError from './not-found.error';
+import LoginError from './login-error';
 
 module.exports = {
     BaseError,
     BadRequestError,
     EntityValidationError,
     InternalServerError,
-    NotFoundError
+    NotFoundError,
+    LoginError
 };

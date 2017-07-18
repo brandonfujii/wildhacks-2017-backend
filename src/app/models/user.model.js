@@ -73,7 +73,7 @@ export default function(
     // Instance Methods
     User.prototype.verifyPassword = async function(candidatePassword: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            return bcrypt.compare(candidatePassword, this.hash, (err, isMatch) => {
+            return bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
                 if (err) {
                     reject(err);
                 } else {

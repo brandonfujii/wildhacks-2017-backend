@@ -5,6 +5,7 @@ import config from 'config';
 import jwt from 'jsonwebtoken';
 
 import models from '../models';
+import tokenController from './token.controller';
 import { isEmail, to } from '../utils';
 
 const createUser = async function(options: Object): Promise<models.User> {
@@ -69,8 +70,6 @@ const signToken = async function(user: models.User): Promise<string> {
             privilege
         } = user;
 
-        console.log(id, email, privilege);
-
         jwt.sign({
             id,
             email,
@@ -88,46 +87,95 @@ const signToken = async function(user: models.User): Promise<string> {
     });
 };
 
-const createToken = async function(user: models.User): Promise<models.User> {
+type TokenPairType = {
+    user: models.User,
+    token: models.Token
+};
+
+const checkToken = async function(user: models.User): Promise<TokenPairType> {
     return new Promise(async (resolve, reject) => {
         let {
             err,
-            data: token
-        } = await to(signToken(user));
+            data: existingToken
+        } = await to(tokenController.getTokenByUserId(parseInt(user.id)));
 
         if (err != null) {
             reject(err);
         }
 
-        if (token) {
-            const t = await models.sequelize.transaction();
-            let tokenInstance;
-            let updatedUser;
-
-            try {
-                console.log(user);
-                tokenInstance = await models.Token.create({
-                    user_id: user.id,
-                    value: token
+        if (existingToken) {
+            if (user.token_id != existingToken.id) {
+                let updatedUser = await user.update({
+                    token_id: existingToken.id
                 });
 
-                updatedUser = await user.update({
-                    token_id: tokenInstance.id
+                resolve({
+                    token: existingToken,
+                    user: updatedUser
                 });
+            } else {
+                resolve({
+                    token: existingToken,
+                    user
+                });
+            }
+        } else {
+            let {
+                err,
+                data: token
+            } = await to(signToken(user));
 
-                await t.commit();
-            } catch(err) {
-                await t.rollback();
+            if (err != null) {
                 reject(err);
             }
 
-            resolve(updatedUser);
+            if (token) {
+                let {
+                    err,
+                    data: tokenPair
+                } = await to(createToken(user, token));
+
+                if (err != null) {
+                    reject(err);
+                }
+
+                resolve(tokenPair);
+            }
         }
+    });
+}
+
+const createToken = async function(user: models.User, token: string): Promise<TokenPairType> {
+    return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+        let tokenInstance;
+        let updatedUser;
+
+        try {
+            tokenInstance = await models.Token.create({
+                user_id: user.id,
+                value: token
+            });
+
+            updatedUser = await user.update({
+                token_id: tokenInstance.id
+            });
+
+            await t.commit();
+        } catch(err) {
+            await t.rollback();
+            reject(err);
+        }
+
+        resolve({
+            user: updatedUser,
+            token: tokenInstance
+        });
     });
 }
 
 export default {
     createUser,
     verifyUser,
-    createToken
+    checkToken
 };
