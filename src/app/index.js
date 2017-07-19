@@ -5,6 +5,9 @@ import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
+import {
+    authMiddleware
+} from './middleware';
 
 // Routes
 import { userRoutes, authRoutes } from './routes';
@@ -34,6 +37,8 @@ export default class App {
     }
 
     routes() {
+        this.express.use(authMiddleware);
+
         // Routes
         userRoutes(this.express);
         authRoutes(this.express);

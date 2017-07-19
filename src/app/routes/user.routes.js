@@ -19,7 +19,7 @@ const log = debug('api:user');
 export default function(app: express$Application) {
     let userRouter = express.Router();
 
-    const getAllUsers = async (req: $Request, res: $Response) => {
+    const getUserPage = async (req: $Request, res: $Response) => {
         let pageNumber = parseInt(req.query.page),
             limit = parseInt(req.query.limit) ? parseInt(req.query.limit) : undefined;
 
@@ -79,6 +79,6 @@ export default function(app: express$Application) {
     };
 
     userRouter.get('/', wrap(getSingleUser));
-    userRouter.get('/all', wrap(getAllUsers));
+    userRouter.get('/all', wrap(getUserPage));
     app.use('/user', userRouter);
 }

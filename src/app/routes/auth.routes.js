@@ -66,6 +66,7 @@ export default function(app: express$Application) {
             } = await to(userController.getUserByEmail(email));
 
             if (err != null) {
+                log(err);
                 throw new LoginError();
             }
 
@@ -76,6 +77,7 @@ export default function(app: express$Application) {
                 } = await to(authController.verifyUser(user, password));
 
                 if (err != null) {
+                    log(err);
                     throw new LoginError();
                 }
 
@@ -86,6 +88,7 @@ export default function(app: express$Application) {
                     } = await to(authController.checkToken(verifiedUser));
 
                     if (err != null) {
+                        log(err);
                         throw new LoginError();
                     }
 

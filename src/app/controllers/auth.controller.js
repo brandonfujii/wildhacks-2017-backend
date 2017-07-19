@@ -20,7 +20,8 @@ import {
  * @param {String}            options.password    
  * @param {"admin"|"user"}    options.privilege 
  * @returns {Promise<User, Error>} - returns a newly created
- * user if resolved; otherwise, throws an error  
+ * user if resolved; otherwise, throws an error and rollbacks
+ * the user creation transaction 
  */
 const createUser = async function(options: Object): Promise<models.User> {
     let {
