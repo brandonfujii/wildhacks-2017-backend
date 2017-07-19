@@ -17,4 +17,5 @@
   4. Now you can run `npm run db:migrate` to create your tables within your development database.
 
 ## Running
-  `npm run build` to transpile the code into `build/` and run the server.
+  1. `npm run build` to transpile the code into `build/` and run the server.
+  2. Check `/ping`
