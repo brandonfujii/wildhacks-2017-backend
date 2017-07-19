@@ -6,7 +6,10 @@ import debug from 'debug';
 
 import userController from '../controllers/user.controller';
 import { isEmail, to } from '../utils';
-import { wrap } from '../middleware';
+import { 
+    wrap,
+    authMiddleware
+} from '../middleware';
 import {
     InternalServerError,
     BadRequestError,
@@ -78,6 +81,7 @@ export default function(app: express$Application) {
         }
     };
 
+    userRouter.use(authMiddleware);
     userRouter.get('/', wrap(getSingleUser));
     userRouter.get('/all', wrap(getUserPage));
     app.use('/user', userRouter);

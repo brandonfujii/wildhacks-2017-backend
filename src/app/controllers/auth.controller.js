@@ -37,7 +37,7 @@ const createUser = async function(options: Object): Promise<models.User> {
         let user; 
         try {
             user = await models.User
-                            .create(options, { transaction: t });
+                        .create(options, { transaction: t });
             await t.commit();
         } catch(err) {
             await t.rollback();

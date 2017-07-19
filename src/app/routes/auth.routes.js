@@ -13,6 +13,7 @@ import {
     EntityValidationError,
     InternalServerError,
     BadRequestError,
+    ForbiddenError,
     LoginError
 } from '../errors';
 
@@ -31,22 +32,30 @@ export default function(app: express$Application) {
         } = req.body;
 
         if (isEmail(email) && password) {
-            let { err, data } = await to(authController
-                                .createUser(req.body));
-            if (err != null) {
-                log(err);
+            // Permissable conditions are an unspecified privilege (which defaults to 'user'),
+            // or 'user' 
+            if (!privilege || privilege === 'user') {
 
-                if (err instanceof Sequelize.ValidationError) {
-                   throw new EntityValidationError(null, err.errors);
+                let { err, data } = await to(authController
+                                    .createUser(req.body));
+                if (err != null) {
+                    log(err);
+
+                    if (err instanceof Sequelize.ValidationError) {
+                       throw new EntityValidationError(null, err.errors);
+                    }
+
+                    throw new InternalServerError();
                 }
 
-                throw new InternalServerError(null);
-            }
+                res.json({ 
+                    success: true,
+                    user: data
+                });
 
-            res.json({ 
-                success: true,
-                user: data
-            });
+            } else {
+                throw new BadRequestError('Check your privilege');
+            }
 
         } else {
             throw new BadRequestError('You must supply a valid email and password');

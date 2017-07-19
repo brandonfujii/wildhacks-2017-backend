@@ -5,12 +5,13 @@ import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
-import {
-    authMiddleware
-} from './middleware';
 
 // Routes
-import { userRoutes, authRoutes } from './routes';
+import { 
+    userRoutes, 
+    authRoutes,
+    adminRoutes
+} from './routes';
 
 export default class App {
     express: express$Application;
@@ -37,11 +38,10 @@ export default class App {
     }
 
     routes() {
-        this.express.use(authMiddleware);
-
         // Routes
         userRoutes(this.express);
         authRoutes(this.express);
+        adminRoutes(this.express);
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {
