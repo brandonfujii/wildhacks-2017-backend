@@ -1,12 +1,13 @@
 // @flow
 
 import jwt from 'jsonwebtoken';
+
+import tokenController from '../controllers/token.controller';
 import { to } from '../utils';
 import {
     TokenExpirationError,
     UnauthorizedError
 } from '../errors';
-import tokenController from '../controllers/token.controller';
 
 const stripToken = function(authHeader: string): ?string {
     let [ bearer, token ] = authHeader.split(' ');
@@ -30,7 +31,7 @@ const authMiddleware = async function(req: $Request, res: $Response, next: expre
             return;
         }
 
-        let { err, data: decoded } = await to(tokenController.verifyToken(token));
+        let { err, data: userInfo } = await to(tokenController.verifyToken(token));
 
         if (err != null) {
             if (err instanceof jwt.TokenExpiredError) {
@@ -42,9 +43,9 @@ const authMiddleware = async function(req: $Request, res: $Response, next: expre
             return;
         }
 
-        if (decoded) {
+        if (userInfo) {
             req.auth = true;
-            req.requester = decoded;
+            req.requester = userInfo;
             next();
             return;
         }
