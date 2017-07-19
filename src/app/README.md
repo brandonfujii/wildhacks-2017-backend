@@ -38,4 +38,3 @@
    - Creates a user with admin privileges
    - Expects a request body with `email` and `password` (Required)
    - Allows `firstName` and `lastName` in request body (Optional)
-
