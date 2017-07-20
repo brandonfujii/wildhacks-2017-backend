@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "n2.4.3",
+    "bcryptjs": "2.4.3",
     "body-parser": "1.17.2",
     "config": "1.26.1",
     "debug": "2.6.8",
