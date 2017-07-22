@@ -3,13 +3,12 @@
 import jwt from 'jsonwebtoken';
 
 import tokenController from '../controllers/token.controller';
-import { to } from '../utils';
 import {
     TokenExpirationError,
     UnauthorizedError
 } from '../errors';
 
-const stripToken = function(authHeader: string): ?string {
+const _stripToken = function(authHeader: string): ?string {
     let [ bearer, token ] = authHeader.split(' ');
 
     // Must be in format Bearer <AuthToken> in header
@@ -24,29 +23,30 @@ const authMiddleware = async function(req: $Request, res: $Response, next: expre
     let accessToken = req.headers['x-access-token'];
 
     if (accessToken) {
-        let token = stripToken(accessToken);
+        let token = _stripToken(accessToken);
 
         if (!token) {
             next(new UnauthorizedError());
             return;
         }
 
-        let { err, data: userInfo } = await to(tokenController.verifyToken(token));
+        try {
+            let tokenInstance = await tokenController.getTokenByValue(token);
+            let userInfo = await tokenController.verifyToken(tokenInstance);
 
-        if (err != null) {
-            if (err instanceof jwt.TokenExpiredError) {
+            if (userInfo) {
+                req.auth = true;
+                req.requester = userInfo;
+                next();
+                return;
+            }
+        } catch(err) {
+            if (err instanceof TokenExpirationError) {
                 next(new TokenExpirationError());
                 return;
             }
 
             next(new UnauthorizedError());
-            return;
-        }
-
-        if (userInfo) {
-            req.auth = true;
-            req.requester = userInfo;
-            next();
             return;
         }
     }

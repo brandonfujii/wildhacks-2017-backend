@@ -9,7 +9,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp; DEBUG='api:*' node build",
-    "db:init": "node_modules/.bin/sequelize init",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db --all",
     "db:migrate": "node_modules/.bin/sequelize db:migrate",
@@ -33,7 +32,6 @@
     "jsonwebtoken": "7.4.1",
     "lodash": "4.17.4",
     "method-override": "2.3.9",
-    "milliseconds": "1.0.3",
     "mysql2": "1.3.5",
     "path": "0.12.7",
     "sequelize": "4.2.1"

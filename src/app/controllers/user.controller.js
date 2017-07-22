@@ -26,7 +26,7 @@ const getUsers = async function(pageNumber: number = 1, limit: number = 10): Pro
  * @returns {Promise<Array<User>>} - returns Promise containing an
  * array of User instances; returns null if does not exist
  */
-const getUserByIdAndEmail = async function(id: number, email: string): Promise<models.User> {
+const getUserByIdAndEmail = async function(id: number, email: string): Promise<?models.User> {
     return models.User.findOne({
         where: {
             email,
@@ -41,7 +41,7 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<m
  * @returns {Promise<User>} - returns Promise containing a User 
  * instance with the given email; returns null if does not exist
  */
-const getUserByEmail = async function(email: string): Promise<models.User> {
+const getUserByEmail = async function(email: string): Promise<?models.User> {
     return models.User.findOne({ 
         where: { email }
     });
@@ -53,7 +53,7 @@ const getUserByEmail = async function(email: string): Promise<models.User> {
  * @returns {Promise<User>} - returns Promise containing a User 
  * instance with the given id; returns null if does not exist
  */
-const getUserById = async function(id: number): Promise<models.User> {
+const getUserById = async function(id: number): Promise<?models.User> {
     return models.User.findOne({ 
         where: { id },
         include: [{
@@ -62,9 +62,28 @@ const getUserById = async function(id: number): Promise<models.User> {
     });
 }
 
+const deleteUserById = async function(id: number): Promise<?{ success: boolean }> {
+    return new Promise(async (resolve, reject) => {
+        let user = await getUserById(id);
+
+        if (user) {
+            try {
+                user.destroy({ force: true });
+                resolve({
+                    success: true
+                });
+            } catch(err) {
+                reject(err);
+            }
+        }
+        
+    });
+}
+
 export default {
     getUsers,
     getUserByIdAndEmail,
     getUserByEmail,
-    getUserById
+    getUserById,
+    deleteUserById,
 };
