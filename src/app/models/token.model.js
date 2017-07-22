@@ -33,8 +33,15 @@ export default function(
 
     // Class Methods
     Token.associate = function(models: Object) {
-        Token.belongsTo(models.User);
-    }
+        Token.belongsTo(models.User, {
+            onDelete: 'CASCADE'
+        });
+    };
+
+    // Hooks
+    Token.beforeDestroy = function(token: Token, options: Object) {
+        console.log(this);
+    };
 
     return Token;
 };

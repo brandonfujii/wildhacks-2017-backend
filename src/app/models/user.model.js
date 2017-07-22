@@ -52,17 +52,17 @@ export default function(
                 isIn: {
                     args: [['admin', 'user']],
                     msg: 'Must be a valid privilege'
-                }
-            }
+                },
+            },
         },
         token_id: {
             type: INTEGER
-        }
+        },
     }, {
         timestamps: true,
         underscored: true,
         indexes: [{ unique: true, fields: ['email'] }],
-        tableName: 'users'
+        tableName: 'users',
     });
 
     // Class Methods
