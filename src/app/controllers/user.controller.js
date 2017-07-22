@@ -2,7 +2,6 @@
 
 import Sequelize from 'sequelize';
 import models from '../models';
-import { to } from '../utils';
 
 /** 
  * Gets a page of users based on a page number and page limit

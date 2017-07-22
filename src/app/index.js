@@ -50,8 +50,7 @@ export default class App {
 
         // Handle synchronous errors
         this.express.use((err: Object, req: $Request, res: $Response, next: express$NextFunction) => {
-            res.status(err.statusCode || 500);
-            return res.send(err);
+            return res.status(err.statusCode || 500).send(err);
         });
     }
 }

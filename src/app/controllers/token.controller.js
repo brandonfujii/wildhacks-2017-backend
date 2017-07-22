@@ -31,6 +31,26 @@ const verifyToken = async function(token: string): Promise<Object> {
     });
 }
 
+// const findTokenByValue = async function(value: string): Promise<?string> {
+//     return new Promise(async (resolve, reject) => {
+//         const t = await models.sequelize.transaction();
+
+//         try {
+//             const token = await models.Token.findOne({ where: { value } });
+
+//             if (token) {
+
+//             }
+
+//             await t.commit();
+            
+//         } catch(err) {
+//             reject(err);
+//             await t.rollback();
+//         }
+//     });
+// };
+
 
 export default {
     getTokenByUserId,

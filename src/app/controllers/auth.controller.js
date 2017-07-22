@@ -85,7 +85,7 @@ const verifyUser = async function(user: models.User, candidatePassword: string):
  * @returns {Promise<String, Error>} - a promise that returns a signed 
  * JSON Web Token when resolved; otherwise rejects an error
  */
-const signToken = async function(user: models.User): Promise<string> {
+const _signToken = async function(user: models.User): Promise<string> {
     const auth = config.get('auth');
     const {
         secret,
@@ -130,7 +130,7 @@ type TokenPairType = {
  * that contains a User-Token instance pair when resolved; otherwise rejects an error
  * and rollbacks transaction
  */
-const createToken = async function(user: models.User, token: string): Promise<TokenPairType> {
+const _createTokenInstance = async function(user: models.User, token: string): Promise<TokenPairType> {
     return new Promise(async (resolve, reject) => {
         const t = await models.sequelize.transaction();
         let tokenInstance;
@@ -168,54 +168,42 @@ const createToken = async function(user: models.User, token: string): Promise<To
  */
 const checkToken = async function(user: models.User): Promise<TokenPairType> {
     return new Promise(async (resolve, reject) => {
-        let {
-            err,
-            data: existingToken
-        } = await to(tokenController.getTokenByUserId(parseInt(user.id)));
+        const t = await models.sequelize.transaction();
 
-        if (err != null) {
-            reject(err);
-        }
+        try {
+            let existingToken = await tokenController.getTokenByUserId(parseInt(user.id));
 
-        if (existingToken) {
-            if (user.token_id != existingToken.id) {
-                let updatedUser = await user.update({
-                    token_id: existingToken.id
-                });
+            if (existingToken) {
+                if (user.token_id != existingToken.id) {
+                    let updatedUser = await user.update({
+                        token_id: existingToken.id
+                    });
 
-                resolve({
-                    token: existingToken,
-                    user: updatedUser
-                });
-            } else {
+                    user = updatedUser;
+                }
+
                 resolve({
                     token: existingToken,
                     user
                 });
-            }
-        } else {
-            let {
-                err,
-                data: token
-            } = await to(signToken(user));
 
-            if (err != null) {
-                reject(err);
-            }
+            } else {
+                let token = await _signToken(user);
 
-            if (token) {
-                let {
-                    err,
-                    data: tokenPair
-                } = await to(createToken(user, token));
-
-                if (err != null) {
-                    reject(err);
+                if (token) {
+                    let tokenPair = await _createTokenInstance(user, token);
+                    resolve(tokenPair);
                 }
-
-                resolve(tokenPair);
             }
+
+            await t.commit();
+
+        } catch(err) {
+            reject(err);
+            await t.rollback();
         }
+
+
     });
 }
 

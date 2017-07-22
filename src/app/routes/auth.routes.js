@@ -7,7 +7,7 @@ import debug from 'debug';
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
 
-import { isEmail, to } from '../utils';
+import { isEmail } from '../utils';
 import { wrap } from '../middleware';
 import {
     EntityValidationError,
@@ -36,22 +36,23 @@ export default function(app: express$Application) {
             // or 'user' 
             if (!privilege || privilege === 'user') {
 
-                let { err, data } = await to(authController
-                                    .createUser(req.body));
-                if (err != null) {
+                try {
+                    let user = await authController.createUser(req.body);
+
+                    res.json({
+                        success: true,
+                        user
+                    });
+
+                } catch(err) {
                     log(err);
 
                     if (err instanceof Sequelize.ValidationError) {
-                       throw new EntityValidationError(null, err.errors);
+                        throw new EntityValidationError(null, err.errors);
                     }
 
                     throw new InternalServerError();
                 }
-
-                res.json({ 
-                    success: true,
-                    user: data
-                });
 
             } else {
                 throw new BadRequestError('Check your privilege');
@@ -69,45 +70,27 @@ export default function(app: express$Application) {
         } = req.body;
 
         if (isEmail(email) && password) {
-            let { 
-                err, 
-                data: user 
-            } = await to(userController.getUserByEmail(email));
+            try {
+                let user = await userController.getUserByEmail(email);
 
-            if (err != null) {
+                if (user) {
+                    let verifiedUser = await authController.verifyUser(user, password);
+
+                    if (verifiedUser) {
+                        let tokenPair = await authController.checkToken(verifiedUser);
+
+                        if (tokenPair) {
+                            return res.json(tokenPair);
+                        }
+                    }
+                }
+
+                throw new LoginError();
+
+            } catch(err) {
                 log(err);
                 throw new LoginError();
             }
-
-            if (user) {
-                let { 
-                    err, 
-                    data: verifiedUser 
-                } = await to(authController.verifyUser(user, password));
-
-                if (err != null) {
-                    log(err);
-                    throw new LoginError();
-                }
-
-                if (verifiedUser) {
-                    let { 
-                        err,
-                        data: tokenPair 
-                    } = await to(authController.checkToken(verifiedUser));
-
-                    if (err != null) {
-                        log(err);
-                        throw new LoginError();
-                    }
-
-                    if (tokenPair) {
-                        res.json(tokenPair);
-                    }
-                }
-            } 
-
-            throw new LoginError();
 
         } else {
             throw new BadRequestError('You must supply a valid email and password');
