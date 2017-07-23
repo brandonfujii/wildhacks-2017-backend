@@ -38,6 +38,13 @@ export default class App {
     }
 
     routes() {
+        this.express.all('*', (req: $Request, res: $Response, next: express$NextFunction) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+            res.header('Access-Control-Allow-Headers', 'Authorization, Accept, X-Access-Token, X-Access-Gatekey, X-Key, Content-Type, Content-Length');
+            next();
+        });
+
         // Routes
         userRoutes(this.express);
         authRoutes(this.express);
@@ -45,7 +52,9 @@ export default class App {
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {
-            res.send('pong');
+            res.json({
+                pong: true
+            });
         });
 
         // Handle synchronous errors
