@@ -29,6 +29,10 @@ module.exports = {
         values: ['admin', 'user'],
         defaultValue: 'user'
       },
+      school: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       token_id: {
           type: Sequelize.INTEGER
       },
