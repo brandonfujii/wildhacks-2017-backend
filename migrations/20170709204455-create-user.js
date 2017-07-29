@@ -34,6 +34,9 @@ module.exports = {
       application_id: {
         type: Sequelize.INTEGER
       },
+      team_id: {
+        type: Sequelize.INTEGER
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

@@ -12,6 +12,7 @@ import {
     authRoutes,
     adminRoutes,
     applicationRoutes,
+    teamRoutes,
 } from './routes';
 
 export default class App {
@@ -51,6 +52,7 @@ export default class App {
         authRoutes(this.express);
         adminRoutes(this.express);
         applicationRoutes(this.express);
+        teamRoutes(this.express);
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {

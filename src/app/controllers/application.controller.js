@@ -29,7 +29,6 @@ const createApplication = async function(id: number, options: Object): Promise<?
 
                     resolve(updatedApplication);
                 } else {
-                    console.log("new application");
                     let application = await models.Application.create(options, { transaction: t, });
                     let updatedUser = await user.update({
                         application_id: application.id,

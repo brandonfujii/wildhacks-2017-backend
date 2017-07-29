@@ -37,11 +37,6 @@ export default function(
             onDelete: 'CASCADE',
         });
     };
-
-    // Hooks
-    Token.beforeDestroy = function(token: Token, options: Object) {
-        console.log(this);
-    };
-
+    
     return Token;
 };

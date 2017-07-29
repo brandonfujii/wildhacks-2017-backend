@@ -70,6 +70,7 @@ export default function(
     User.associate = function(models: Object) {
         User.hasOne(models.Token);
         User.hasOne(models.Application);
+        User.belongsTo(models.Team);
     }
 
     // Instance Methods
