@@ -31,7 +31,15 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<?
         where: {
             email,
             id
-        }
+        },
+        include: [
+            {
+                model: models.Token
+            },
+            {
+                model: models.Application
+            },
+        ]
     });
 };
 
@@ -43,7 +51,15 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<?
  */
 const getUserByEmail = async function(email: string): Promise<?models.User> {
     return models.User.findOne({ 
-        where: { email }
+        where: { email },
+        include: [
+            {
+                model: models.Token
+            },
+            {
+                model: models.Application
+            },
+        ]
     });
 };
 
@@ -56,11 +72,16 @@ const getUserByEmail = async function(email: string): Promise<?models.User> {
 const getUserById = async function(id: number): Promise<?models.User> {
     return models.User.findOne({ 
         where: { id },
-        include: [{
-          model: models.Token
-        }]
+        include: [
+            {
+                model: models.Token
+            },
+            {
+                model: models.Application
+            },
+        ]
     });
-}
+};
 
 const deleteUserById = async function(id: number): Promise<?{ success: boolean }> {
     return new Promise(async (resolve, reject) => {
@@ -78,7 +99,7 @@ const deleteUserById = async function(id: number): Promise<?{ success: boolean }
         }
         
     });
-}
+};
 
 export default {
     getUsers,

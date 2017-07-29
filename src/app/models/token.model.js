@@ -34,7 +34,7 @@ export default function(
     // Class Methods
     Token.associate = function(models: Object) {
         Token.belongsTo(models.User, {
-            onDelete: 'CASCADE'
+            onDelete: 'CASCADE',
         });
     };
 

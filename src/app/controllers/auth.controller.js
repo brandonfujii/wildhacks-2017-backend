@@ -25,8 +25,6 @@ import {
  */
 const createUser = async function(options: Object): Promise<models.User> {
     let {
-        firstName,
-        lastName,
         email,
         password,
         privilege
@@ -140,11 +138,11 @@ const _createTokenInstance = async function(user: models.User, token: string): P
             tokenInstance = await models.Token.create({
                 user_id: user.id,
                 value: token
-            });
+            }, { transaction: t });
 
             updatedUser = await user.update({
                 token_id: tokenInstance.id
-            });
+            }, { transaction: t });
 
             await t.commit();
         } catch(err) {
@@ -181,10 +179,10 @@ const checkToken = async function(user: models.User): Promise<TokenPairType> {
                     let [ updatedUser, updatedToken ] = await Promise.all([
                             user.update({
                                 token_id: existingToken.id
-                            }),
+                            }, { transaction: t }),
                             existingToken.update({
                                 value: tokenValue
-                            })
+                            }, { transaction: t }),
                         ]);
 
                     user = updatedUser;
@@ -192,7 +190,7 @@ const checkToken = async function(user: models.User): Promise<TokenPairType> {
                 } else {
                     existingToken = await existingToken.update({
                         value: tokenValue
-                    });
+                    }, { transaction: t });
                 }
 
                 resolve({

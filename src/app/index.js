@@ -10,7 +10,8 @@ import Sequelize from 'sequelize';
 import { 
     userRoutes, 
     authRoutes,
-    adminRoutes
+    adminRoutes,
+    applicationRoutes,
 } from './routes';
 
 export default class App {
@@ -49,6 +50,7 @@ export default class App {
         userRoutes(this.express);
         authRoutes(this.express);
         adminRoutes(this.express);
+        applicationRoutes(this.express);
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {
