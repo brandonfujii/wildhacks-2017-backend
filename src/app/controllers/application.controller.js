@@ -14,7 +14,7 @@ const getApplicationById = async function(id: number): Promise<?models.Applicati
     });
 };
 
-const createApplication = async function(id: number, options: Object): Promise<?models.User> {
+const updateApplication = async function(id: number, options: Object): Promise<?models.User> {
     return new Promise(async (resolve, reject) => {
         const t = await models.sequelize.transaction();
 
@@ -52,5 +52,5 @@ const createApplication = async function(id: number, options: Object): Promise<?
 
 export default {
     getApplicationById,
-    createApplication,
+    updateApplication,
 };

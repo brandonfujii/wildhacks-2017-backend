@@ -1,10 +1,12 @@
 // @flow
 
 import express from 'express';
+import config from 'config';
 import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
+import Dropbox from 'dropbox';
 
 // Routes
 import { 
@@ -15,11 +17,20 @@ import {
     teamRoutes,
 } from './routes';
 
+import {
+    httpMiddleware,
+    errorHandler,
+} from './middleware';
+
 export default class App {
     express: express$Application;
+    dbx: Dropbox;
 
     constructor() {
         this.express = express();
+        this.dbx = new Dropbox({ 
+            accessToken: config.get('dropbox.access_token'),
+        });
         this.middleware();
         this.routes();
     }
@@ -27,7 +38,7 @@ export default class App {
     middleware() {
         this.express.use(bodyParser.json({ 
             type: 'application/*',
-            limit: '30mb'
+            limit: '10mb'
         }));
         this.express.use(bodyParser.urlencoded({ extended: true }));
         this.express.use(methodOverride());
@@ -40,18 +51,13 @@ export default class App {
     }
 
     routes() {
-        this.express.all('*', (req: $Request, res: $Response, next: express$NextFunction) => {
-            res.header('Access-Control-Allow-Origin', '*');
-            res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
-            res.header('Access-Control-Allow-Headers', 'Authorization, Accept, X-Access-Token, X-Access-Gatekey, X-Key, Content-Type, Content-Length');
-            next();
-        });
+        this.express.all('*', httpMiddleware);
 
         // Routes
         userRoutes(this.express);
         authRoutes(this.express);
         adminRoutes(this.express);
-        applicationRoutes(this.express);
+        applicationRoutes(this.express, this.dbx);
         teamRoutes(this.express);
 
         // Test ping
@@ -62,8 +68,6 @@ export default class App {
         });
 
         // Handle synchronous errors
-        this.express.use((err: Object, req: $Request, res: $Response, next: express$NextFunction) => {
-            return res.status(err.statusCode || 500).send(err);
-        });
+        this.express.use(errorHandler);
     }
 }

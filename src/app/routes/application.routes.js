@@ -2,9 +2,13 @@
 
 import Sequelize from 'sequelize';
 import express from 'express';
+import multer from 'multer';
+import Dropbox from 'dropbox';
 import debug from 'debug';
 
 import appController from '../controllers/application.controller';
+import resumeController from '../controllers/resume.controller';
+
 import { 
     wrap,
     authMiddleware
@@ -17,11 +21,12 @@ import {
 } from '../errors';
 
 const log = debug('api:application');
+const upload = multer(resumeController.uploadOptions);
 
-export default function(app: express$Application) {
+export default function(app: express$Application, dbx: Dropbox) {
     let appRouter = express.Router();
 
-    const createApplication = async (req: $Request, res: $Response) => {
+    const updateApplication = async (req: $Request, res: $Response) => {
         if (!req.body) {
             throw new BadRequestError('Must include application body');
         }
@@ -31,7 +36,11 @@ export default function(app: express$Application) {
         }
 
         try {
-            let application = await appController.createApplication(req.body.user_id, req.body);
+            if (req.file) {
+                await resumeController.uploadResume(dbx, req.file);
+            }
+
+            let application = await appController.updateApplication(req.body.user_id, req.body);
 
             res.json({
                 success: true,
@@ -53,6 +62,6 @@ export default function(app: express$Application) {
         }
     };
 
-    appRouter.post('/create', wrap(createApplication));
+    appRouter.post('/update', upload.single('resume'), wrap(updateApplication));
     app.use('/application', appRouter);
 }

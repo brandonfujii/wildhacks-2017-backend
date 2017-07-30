@@ -54,11 +54,13 @@ function onListening() {
     log(`Listening on ${bind}...`);
 }
 
-export default function() {
+export default () => {
     const app = new App();
     const server: http.Server = http.createServer(app.express);
 
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);
+
+    return app.express;
 }

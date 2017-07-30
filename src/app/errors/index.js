@@ -8,7 +8,8 @@ import BadRequestError from './bad-request.error';
 import EntityValidationError from './entity-validation.error';
 import UnauthorizedError from './unauthorized.error';
 import ForbiddenError from './forbidden.error';
-import TokenExpirationError from './token-expiration.error.js'
+import TokenExpirationError from './token-expiration.error';
+import EntityTooLargeError from './entity-too-large.error';
 
 // Server Errors
 import InternalServerError from './internal-server.error';
@@ -22,6 +23,7 @@ module.exports = {
     UnauthorizedError,
     ForbiddenError,
     TokenExpirationError,
+    EntityTooLargeError,
     EntityValidationError,
     InternalServerError,
     NotFoundError,

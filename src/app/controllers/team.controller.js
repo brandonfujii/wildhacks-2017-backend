@@ -49,7 +49,7 @@ const createOrJoinTeam = async function(name: string, userId: number): Promise<?
                 ]);
 
             if (!user) {
-                throw new NotFoundError('Team creator was not found');
+                throw new NotFoundError('User was not found');
             } else {
                 if (existingTeam) {
                     team = _userCanJoinTeam(existingTeam, user.id) ? existingTeam : null;
