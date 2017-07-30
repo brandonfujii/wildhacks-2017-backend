@@ -2,12 +2,12 @@
 
 import Sequelize from 'sequelize';
 import express from 'express';
-import multer from 'multer';
-import Dropbox from 'dropbox';
 import debug from 'debug';
 
 import appController from '../controllers/application.controller';
 import resumeController from '../controllers/resume.controller';
+
+import UploadService from '../services/upload.service';
 
 import { 
     wrap,
@@ -21,9 +21,8 @@ import {
 } from '../errors';
 
 const log = debug('api:application');
-const upload = multer(resumeController.uploadOptions);
 
-export default function(app: express$Application, dbx: Dropbox) {
+export default function(app: express$Application, resumeStore: UploadService) {
     let appRouter = express.Router();
 
     const updateApplication = async (req: $Request, res: $Response) => {
@@ -37,7 +36,7 @@ export default function(app: express$Application, dbx: Dropbox) {
 
         try {
             if (req.file) {
-                await resumeController.uploadResume(dbx, req.file);
+                await resumeController.uploadResume(resumeStore, req.file);
             }
 
             let application = await appController.updateApplication(req.body.user_id, req.body);
@@ -62,6 +61,6 @@ export default function(app: express$Application, dbx: Dropbox) {
         }
     };
 
-    appRouter.post('/update', upload.single('resume'), wrap(updateApplication));
+    appRouter.post('/update', resumeStore.multer().single('resume'), wrap(updateApplication));
     app.use('/application', appRouter);
 }

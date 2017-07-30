@@ -8,6 +8,8 @@ import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
 import Dropbox from 'dropbox';
 
+import UploadService from './services/upload.service';
+
 // Routes
 import { 
     userRoutes, 
@@ -24,13 +26,11 @@ import {
 
 export default class App {
     express: express$Application;
-    dbx: Dropbox;
+    resumeStore: Dropbox;
 
     constructor() {
         this.express = express();
-        this.dbx = new Dropbox({ 
-            accessToken: config.get('dropbox.access_token'),
-        });
+        this.resumeStore = new UploadService(config.get('dropbox.access_token'));
         this.middleware();
         this.routes();
     }
@@ -57,7 +57,7 @@ export default class App {
         userRoutes(this.express);
         authRoutes(this.express);
         adminRoutes(this.express);
-        applicationRoutes(this.express, this.dbx);
+        applicationRoutes(this.express, this.resumeStore);
         teamRoutes(this.express);
 
         // Test ping
