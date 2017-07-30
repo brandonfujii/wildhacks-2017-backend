@@ -27,6 +27,15 @@ export default function(
     Team.associate = function(models: Object) {
         Team.hasMany(models.User);
     };
+
+    // Instance Methods
+    Team.prototype.isTeamMember = function(userId: number): boolean {
+        return (this.Users || []).findIndex(user => user.id === userId) > -1;
+    };
+
+    Team.prototype.numTeamMembers = function(): number {
+        return (this.Users || []).length;
+    };
     
     return Team;
 };

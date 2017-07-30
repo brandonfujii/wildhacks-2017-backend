@@ -6,13 +6,17 @@ import models from '../models';
 import userController from './user.controller';
 import {
     NotFoundError,
+    TeamError,
 } from '../errors';
+import type {
+    SuccessMessage
+} from '../types';
 
 const DEFAULT_MAX_TEAM_MEMBERS = 4;
 
 const getTeamByName = async function(name: string): Promise<?models.Team> { 
     return models.Team.findOne({
-        where: { name, },
+        where: { name: name.toLowerCase() },
         include: [{
             model: models.User,
         }],
@@ -22,18 +26,18 @@ const getTeamByName = async function(name: string): Promise<?models.Team> {
 const _userCanJoinTeam = function(team: models.Team, userId: number): boolean {
     let teamMembers = (team.Users || []).map(user => user.id);
 
-    if (teamMembers.length >= DEFAULT_MAX_TEAM_MEMBERS) {
-        throw new Error('Too many members');
+    if (team.numTeamMembers() >= DEFAULT_MAX_TEAM_MEMBERS) {
+        throw new TeamError('Team has the maximum number of members allowed');
     }
 
-    if (teamMembers.indexOf(userId) > -1) {
-        throw new Error('Already on team');
+    if (team.isTeamMember(userId)) {
+        throw new TeamError('User is already on team');
     }
 
     return true;
 };
 
-const createOrJoinTeam = async function(name: string, creatorId: number): Promise<?models.Team> {
+const createOrJoinTeam = async function(name: string, userId: number): Promise<?models.Team> {
     return new Promise(async (resolve, reject) => {
         const t = await models.sequelize.transaction();
         let team;
@@ -41,7 +45,7 @@ const createOrJoinTeam = async function(name: string, creatorId: number): Promis
         try {
             let [ existingTeam, user ] = await Promise.all([
                     getTeamByName(name),
-                    userController.getUserById(creatorId),
+                    userController.getUserById(userId),
                 ]);
 
             if (!user) {
@@ -79,9 +83,43 @@ const createOrJoinTeam = async function(name: string, creatorId: number): Promis
     });
 };
 
+const leaveTeam = async function(name: string, userId: number): Promise<SuccessMessage> {
+    const t = await models.sequelize.transaction();
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            let [ teamToBeRemoved, user ] = await Promise.all([
+                    getTeamByName(name),
+                    userController.getUserById(userId),
+                ]);
+
+            if (teamToBeRemoved && user) {
+                if (teamToBeRemoved.isTeamMember(user.id)) {
+                    let updatedUser = await user.update({
+                        team_id: null,
+                    });
+
+                    resolve({ success: true });
+                } else {
+                    throw new TeamError(`User is not a team member of ${teamToBeRemoved.name}`);
+                }
+
+            } else {
+                throw new NotFoundError('Team or user was not found');
+            } 
+
+            await t.commit();
+        } catch(err) {
+            reject(err);
+            await t.rollback();
+        }
+    });
+};
+
 export default {
     getTeamByName,
     createOrJoinTeam,
+    leaveTeam,
 };
 
 

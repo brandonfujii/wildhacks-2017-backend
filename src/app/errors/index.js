@@ -14,6 +14,7 @@ import TokenExpirationError from './token-expiration.error.js'
 import InternalServerError from './internal-server.error';
 import NotFoundError from './not-found.error';
 import LoginError from './login.error';
+import TeamError from './team.error';
 
 module.exports = {
     BaseError,
@@ -25,5 +26,6 @@ module.exports = {
     InternalServerError,
     NotFoundError,
     LoginError,
-    UnauthorizedError
+    UnauthorizedError,
+    TeamError,
 };

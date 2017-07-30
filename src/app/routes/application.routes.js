@@ -41,7 +41,7 @@ export default function(app: express$Application) {
         } catch(err) {
             log(err);
 
-            if (err.statusCode === 404) {
+            if (err.name === 'Not Found Error') {
                 throw new NotFoundError();
             }
 
