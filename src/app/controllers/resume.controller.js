@@ -1,16 +1,21 @@
 // @flow
 
+import models from '../models';
 import UploadService from '../services/upload.service';
 
 import type {
-    SuccessMessage
+    SuccessMessage,
+    ResumeFile,
 } from '../types';
 
 
-const uploadResume =  async function(resumeStore: UploadService, file: Object): Promise<?SuccessMessage> {
+const uploadResume =  async function(resumeStore: UploadService, file: ResumeFile): Promise<?SuccessMessage> {
+    console.log(file);
     return new Promise(async (resolve, reject) => {
         try {
-            let result = await resumeStore.upload(file); 
+            // TODO: check existing resume instance / create resume instance
+
+            let result = await resumeStore.upload(file);
             resolve(result);
         } catch(err) {
             reject(err);

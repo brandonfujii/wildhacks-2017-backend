@@ -18,8 +18,8 @@ module.exports = {
             key: 'id'
           }
       },
-      value: {
-        type: Sequelize.BLOB,
+      filename: {
+        type: Sequelize.STRING,
         allowNull: false
       },
       created_at: {

@@ -9,9 +9,15 @@ import Dropbox from 'dropbox';
 import {
     BadRequestError,
 } from '../errors';
+
 import type {
-    SuccessMessage
+    SuccessMessage,
+    ResumeFile
 } from '../types';
+
+import {
+    sha1,
+} from '../utils';
 
 
 const DEFAULT_DROPBOX_RESUME_PATH = '/resumes';
@@ -30,8 +36,11 @@ function UploadService(accessToken: string, staticPath: ?string, dropboxPath: ?s
         destination: (req, file, callback) => {
             callback(null, this.staticPath);
         },
-        filename: (req, file, callback) => {
-            callback(null, `${file.fieldname}-${Date.now()}.${mime.extension(file.mimetype)}`);
+        filename: async (req, file, callback) => {
+            const hash = await sha1(file.originalname);
+            const ext = mime.extension(file.mimetype);
+            console.log(hash, ext);
+            callback(null, `${hash}.${ext}`);
         },
     });
 
@@ -57,7 +66,7 @@ const _isValidDocumentExtension = function(extension: string): boolean {
 };
 
 
-UploadService.prototype.resumeFileFilter = function(req: $Request, file: Object, callback: Function): void {
+UploadService.prototype.resumeFileFilter = function(req: $Request, file: ResumeFile, callback: Function): void {
     const ext = mime.extension(file.mimetype);
 
     console.log(ext);
@@ -69,7 +78,7 @@ UploadService.prototype.resumeFileFilter = function(req: $Request, file: Object,
     callback(null, true);
 };
 
-UploadService.prototype.upload = async function(file: Object): Promise<?SuccessMessage> {
+UploadService.prototype.upload = async function(file: ResumeFile): Promise<?SuccessMessage> {
     return new Promise(async (resolve, reject) => {
         try {
             fs.readFile(file.path, null, async (err, contents) => {
