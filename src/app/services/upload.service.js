@@ -6,12 +6,14 @@ import mime from 'mime';
 import Multer from 'multer';
 import Dropbox from 'dropbox';
 
+import models from '../models';
+
 import {
     BadRequestError,
 } from '../errors';
 
 import type {
-    SuccessMessage,
+    UploadReceipt,
     ResumeFile
 } from '../types';
 
@@ -37,9 +39,9 @@ function UploadService(accessToken: string, staticPath: ?string, dropboxPath: ?s
             callback(null, this.staticPath);
         },
         filename: async (req, file, callback) => {
-            const hash = await sha1(file.originalname);
+            const hash = await sha1(`${file.originalname}-${Date.now()}`);
             const ext = mime.extension(file.mimetype);
-            console.log(hash, ext);
+
             callback(null, `${hash}.${ext}`);
         },
     });
@@ -51,8 +53,6 @@ function UploadService(accessToken: string, staticPath: ?string, dropboxPath: ?s
     };
 
     this.m = Multer(this.options);
-
-    return this;
 }
 
 const _isValidDocumentExtension = function(extension: string): boolean {
@@ -69,8 +69,6 @@ const _isValidDocumentExtension = function(extension: string): boolean {
 UploadService.prototype.resumeFileFilter = function(req: $Request, file: ResumeFile, callback: Function): void {
     const ext = mime.extension(file.mimetype);
 
-    console.log(ext);
-
     if (!_isValidDocumentExtension(ext)) {
         return callback(new BadRequestError('Invalid file extension'), false);
     }
@@ -78,22 +76,33 @@ UploadService.prototype.resumeFileFilter = function(req: $Request, file: ResumeF
     callback(null, true);
 };
 
-UploadService.prototype.upload = async function(file: ResumeFile): Promise<?SuccessMessage> {
+UploadService.prototype.upload = async function(file: ResumeFile): Promise<UploadReceipt> {
     return new Promise(async (resolve, reject) => {
         try {
-            fs.readFile(file.path, null, async (err, contents) => {
-                if (err) {
-                    reject(err);
-                }
+            const source = file.path;
+            const contents = fs.readFileSync(source);
+            const destination = `${this.dropboxPath}/${file.filename}`;
 
+            if (contents) {
                 await this.dropboxStore.filesUpload({ 
-                    path: `${this.dropboxPath}/${file.filename}`,
+                    path: destination,
                     contents, 
                 });
 
-                resolve({ success: true });
-            });
-            
+                resolve({ 
+                    success: true,
+                    destination,
+                    resume: null,
+                });
+            } else {
+                // contenidos no existen
+                resolve({
+                    success: false,
+                    destination,
+                    resume: null,
+                });
+            }
+                
         } catch(err){
             reject(err);
         }

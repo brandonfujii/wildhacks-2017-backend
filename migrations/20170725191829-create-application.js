@@ -17,6 +17,9 @@ module.exports = {
             key: 'id'
           }
       },
+      resume_id: {
+        type: Sequelize.INTEGER
+      },
       first_name: {
         type: Sequelize.STRING,
         allowNull: true

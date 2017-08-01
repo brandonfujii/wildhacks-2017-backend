@@ -32,6 +32,9 @@ export default function(
                 key: 'id'
             }
         },
+        resume_id: {
+            type: INTEGER
+        },
         first_name: {
             type: STRING,
             validate: {
@@ -97,6 +100,7 @@ export default function(
         Application.belongsTo(models.User, {
             onDelete: 'CASCADE',
         });
+        Application.hasOne(models.Resume);
     };
 
     const _isApplicationComplete = function(application: Application, appValidations: Array<string> = []): boolean {

@@ -6,8 +6,8 @@ type ResumeFile = {
     encoding: string,
     mimetype: string,
     destination: ?string,
-    filename: ?string,
-    path: ?string,
+    filename: string,
+    path: string,
     size: ?number
 };
 

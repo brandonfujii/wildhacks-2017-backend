@@ -31,20 +31,19 @@ export default function(app: express$Application, resumeStore: UploadService) {
             throw new BadRequestError('Must include application body');
         }
 
-        if (!req.body.user_id) {
+        const userId = req.body.user_id;
+
+        if (!userId) {
             throw new BadRequestError('Must provide a user id');
         }
 
         try {
-            if (req.file) {
-                await resumeController.uploadResume(resumeStore, req.file);
-            }
-
-            let application = await appController.updateApplication(req.body.user_id, req.body);
+            let result = await appController
+                .handleApplicationAndResume(userId, req.body, req.file, resumeStore);
 
             res.json({
                 success: true,
-                application,
+                result,
             });
 
         } catch(err) {

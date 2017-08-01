@@ -13,7 +13,7 @@ export default function(
     } = DataTypes;
 
     const Resume = sequelize.define('Resume', {
-        user_id: {
+        application_id: {
             type: INTEGER,
             onDelete: 'CASCADE',
             allowNull: false,
