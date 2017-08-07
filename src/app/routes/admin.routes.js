@@ -7,7 +7,7 @@ import debug from 'debug';
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
 
-import { isEmail, to } from '../utils';
+import { isEmail } from '../utils';
 import { 
     wrap,
     authMiddleware,
@@ -25,38 +25,34 @@ export default function(app: express$Application) {
     let adminRouter = express.Router();
 
     const registerAdminUser = async (req: $Request, res: $Response) => {
-            const {
-                firstName,
-                lastName,
-                email,
-                password
-            } = req.body;
+        const {
+            email,
+            password,
+        } = req.body;
 
 
-            if (isEmail(email) && password) {
-                try {
-                    let admin = await authController.createUser({
-                                                        firstName,
-                                                        lastName,
-                                                        email,
-                                                        password,
-                                                        privilege: 'admin'
-                                                    });
-                    res.json({ 
-                        success: true,
-                        user: admin
-                    });
-                } catch(err) {
-                    log(err);
+        if (isEmail(email) && password) {
+            try {
+                let admin = await authController.createUser({
+                                                    email,
+                                                    password,
+                                                    privilege: 'admin'
+                                                });
+                res.json({ 
+                    success: true,
+                    user: admin
+                });
+            } catch(err) {
+                log(err);
 
-                    if (err instanceof Sequelize.ValidationError) {
-                       throw new EntityValidationError(null, err.errors);
-                    }
-                    throw new InternalServerError();
+                if (err instanceof Sequelize.ValidationError) {
+                   throw new EntityValidationError(null, err.errors);
                 }
-            } else {
-                throw new BadRequestError('You must supply a valid email and password');
+                throw new InternalServerError();
             }
+        } else {
+            throw new BadRequestError('You must supply a valid email and password');
+        }
     };
 
     const deleteUserById = async (req: $Request, res: $Response) => {

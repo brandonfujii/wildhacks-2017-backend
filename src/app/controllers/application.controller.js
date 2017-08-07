@@ -13,6 +13,9 @@ import type {
     ResumeFile,
 } from '../types';
 
+const VALID_DECISIONS = ['accepted', 'rejected', 'waitlisted', 'undecided'];
+const VALID_RSVP_VALUES = ['yes', 'no', 'undecided'];
+
 const getApplicationById = async function(id: number): Promise<?models.Application> {
     return models.Application.findOne({
         where: { id },
@@ -32,13 +35,13 @@ const updateApplication = async function(applicationId: number, options: Object)
 const _saveApplication = async function(t: sequelize.Transaction, userId: number, options: Object): Promise<?models.User> {
     return new Promise(async (resolve, reject) => {
         try {
-            let user = await userController.getUserById(userId);
+            const user = await userController.getUserById(userId);
 
             if (user) {
-                let existingApplication = user.application_id ? await getApplicationById(user.application_id) : null;
+                const existingApplication = user.application_id ? await getApplicationById(user.application_id) : null;
 
                 if (existingApplication) {
-                    let updatedApplication = await existingApplication.update(options, { transaction: t, });
+                    const updatedApplication = await existingApplication.update(options, { transaction: t, });
 
                     resolve(updatedApplication);
                 } else {
@@ -59,15 +62,14 @@ const _saveApplication = async function(t: sequelize.Transaction, userId: number
         } catch(err) {
             reject(err);
         }
-
     });
 };
 
 const handleApplicationAndResume = async function(userId: number, 
         appOptions: Object, file: ?ResumeFile, resumeStore: UploadService): Promise<?models.Application> {
-    const t = await models.sequelize.transaction();
 
     return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
 
         try {
             let application = await _saveApplication(t, userId, appOptions);
@@ -75,7 +77,7 @@ const handleApplicationAndResume = async function(userId: number,
 
             if (application && file) {
                 result = await resumeController.uploadResume(t, resumeStore, file, application.id);
-                let resume = result ? result.resume : null; 
+                const resume = result ? result.resume : null; 
 
                 if (resume) {
                     application = await application.update({
@@ -92,7 +94,7 @@ const handleApplicationAndResume = async function(userId: number,
             } else {
                 resolve({
                     application,
-                })
+                });
             }
 
             await t.commit(); 
@@ -104,8 +106,69 @@ const handleApplicationAndResume = async function(userId: number,
     });
 };
 
+const judgeApplication = async function(applicationId: number, decision: string): Promise<?models.Application> {
+    return new Promise(async (resolve, reject) => {
+        if (VALID_DECISIONS.includes(decision)) {
+            const [ t, application ] = await Promise.all([
+                models.sequelize.transaction(),
+                getApplicationById(applicationId),
+            ]);
+
+            try {
+                if (application) {
+                    const updatedApplication = await application.update({
+                        decision,
+                    }, { transaction: t, });
+
+                    resolve(updatedApplication);
+
+                    await t.commit();
+
+                } else {
+                    reject(new NotFoundError('Could not find application with given id'));
+                }
+
+            } catch(err) {
+                reject(err);
+                await t.rollback();
+            }
+        }
+    });
+};
+
+const updateRsvp = async function(applicationId: number, rsvpValue: string): Promise<?models.Application> {
+    return new Promise(async (resolve, reject) => {
+        if (VALID_RSVP_VALUES.includes(rsvpValue)) {
+            const [ t, application ] = await Promise.all([
+                models.sequelize.transaction(),
+                getApplicationById(applicationId),
+            ]);
+
+            try {
+                if (application) {
+                    const updatedApplication = await application.update({
+                        rsvp: rsvpValue,
+                    }, { transaction: t, });
+
+                    resolve(updatedApplication);
+                    await t.commit();
+
+                } else {
+                    reject(new NotFoundError('Could not find application with given id'));
+                }
+
+            } catch(err) {
+                reject(err);
+                await t.rollback();
+            }
+        }
+    });
+};
+
 export default {
     getApplicationById,
     updateApplication,
     handleApplicationAndResume,
+    judgeApplication,
+    updateRsvp,
 };

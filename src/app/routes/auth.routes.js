@@ -1,100 +1,66 @@
 // @flow
 
 import express from 'express';
-import Sequelize from 'sequelize';
-import debug from 'debug';
 
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
-
-import { isEmail } from '../utils';
+import { 
+    isEmail,
+    normalizeString,
+} from '../utils';
 import { wrap } from '../middleware';
 import {
-    EntityValidationError,
-    InternalServerError,
     BadRequestError,
-    ForbiddenError,
-    LoginError
+    LoginError,
 } from '../errors';
 
-const log = debug('api:auth');
-
 export default function(app: express$Application) {
-    let authRouter = express.Router();
+    const authRouter = express.Router();
 
     const registerUser = async (req: $Request, res: $Response) => {
-        const {
-            firstName,
-            lastName,
-            email,
-            password,
-            privilege
-        } = req.body;
+        const email = normalizeString(req.body.email);
+        const password = normalizeString(req.body.password);
+        const privilege = normalizeString(req.body.privilege);
 
-        if (isEmail(email) && password) {
-            // Permissable conditions are an unspecified privilege (which defaults to 'user'),
-            // or 'user' 
-            if (!privilege || privilege === 'user') {
-
-                try {
-                    let user = await authController.createUser(req.body);
-
-                    res.json({
-                        success: true,
-                        user
-                    });
-
-                } catch(err) {
-                    log(err);
-
-                    if (err instanceof Sequelize.ValidationError) {
-                        throw new EntityValidationError(null, err.errors);
-                    }
-
-                    throw new InternalServerError();
-                }
-
-            } else {
-                throw new BadRequestError('Check your privilege');
-            }
-
-        } else {
+        if (!isEmail(email) || !password) {
             throw new BadRequestError('You must supply a valid email and password');
         }
+
+        const user = await authController.createUser({
+            email,
+            password,
+            privilege: 'user',
+        });
+
+        res.json({
+            success: true,
+            user
+        });
     };
 
     const loginUser = async (req: $Request, res: $Response) => {
-        const {
-            email,
-            password
-        } = req.body;
+        const email = normalizeString(req.body.email);
+        const password = normalizeString(req.body.password);
 
-        if (isEmail(email) && password) {
-            try {
-                let user = await userController.getUserByEmail(email);
+        if (!email || !isEmail(email) || !password) {
+            throw new BadRequestError('You must supply a valid email and password');
+        } else {
+            let user = await userController.getUserByEmail(email);
 
-                if (user) {
-                    let verifiedUser = await authController.verifyUser(user, password);
+            if (user) {
+                let verifiedUser = await authController.verifyUser(user, password);
 
-                    if (verifiedUser) {
-                        let tokenPair = await authController.checkToken(verifiedUser);
+                if (verifiedUser) {
+                    const tokenPair = await authController.checkToken(verifiedUser);
 
-                        if (tokenPair) {
-                            return res.json(tokenPair);
-                        }
+                    if (tokenPair) {
+                        return res.json(tokenPair);
                     }
                 }
-
-                throw new LoginError();
-
-            } catch(err) {
-                log(err);
-                throw new LoginError();
             }
-
-        } else {
-            throw new BadRequestError('You must supply a valid email and password');
         }
+
+        throw new LoginError();
     }
 
     authRouter.post('/register', wrap(registerUser));

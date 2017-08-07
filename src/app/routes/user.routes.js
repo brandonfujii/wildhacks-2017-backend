@@ -1,83 +1,67 @@
 // @flow
 
-import Sequelize from 'sequelize';
 import express from 'express';
-import debug from 'debug';
 
 import userController from '../controllers/user.controller';
-import { isEmail, to } from '../utils';
+import { 
+    normalizeString,
+    isEmail, 
+} from '../utils';
 import { 
     wrap,
     authMiddleware
 } from '../middleware';
 import {
-    InternalServerError,
     BadRequestError,
-    EntityValidationError,
-    NotFoundError
+    NotFoundError,
 } from '../errors';
 
-const log = debug('api:user');
-
 export default function(app: express$Application) {
-    let userRouter = express.Router();
+    const userRouter = express.Router();
 
     const getUserPage = async (req: $Request, res: $Response) => {
-        let pageNumber = parseInt(req.query.page),
-            limit = parseInt(req.query.limit) ? parseInt(req.query.limit) : undefined;
+        const pageNumber = parseInt(req.query.page),
+            limit = parseInt(req.query.limit) 
+                ? parseInt(req.query.limit)
+                : undefined;
 
         if (!pageNumber || pageNumber < 1) {
             throw new BadRequestError('Please supply a valid integer page number greater than 1');
         }
 
-        const { err, data } = await to(userController.getUsers(pageNumber, limit));
-        
-        if (err != null) {
-            throw new InternalServerError('Something went wrong. Cannot retrieve users');
-        }
-
+        const users = await userController.getUsers(pageNumber, limit);
+    
         res.json({ 
             page: pageNumber,
-            users: data ? data : [] 
+            users: users ? users : [],
         });
     };
 
     const getSingleUser = async (req: $Request, res: $Response) => {
-        const email = req.query.email;
+        const email = normalizeString(req.query.email);
         const userId = parseInt(req.query.id);
-        let error, user;
+        let user = null;
 
         if (email && userId) {
-            const { err, data } = await to(userController.getUserByIdAndEmail(userId, email));
-            error = err;
-            user = data; 
+            user = await userController.getUserByIdAndEmail(userId, email);
         } else {
             if (!email && !userId) {
                 throw new BadRequestError('Please supply either a valid email or id parameter');
             }
 
             if (email) {
-                const { err, data } = await to(userController.getUserByEmail(email));
-                error = err;
-                user = data;
+                user = await userController.getUserByEmail(email);
             }
 
             if (userId) {
-                const { err, data } = await to(userController.getUserById(userId));
-                error = err;
-                user = data;
+                user = await userController.getUserById(userId);
             }
-        }
-
-        if (error != null) {
-            log(error);
-            throw new InternalServerError(error.message);
         }
 
         if (user) {
             res.json({ user });
         } else {
-            throw new NotFoundError('The requested user does not exist')
+            throw new NotFoundError('The requested user does not exist');
         }
     };
 

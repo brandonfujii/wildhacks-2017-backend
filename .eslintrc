@@ -21,7 +21,8 @@
     "flowtype/no-types-missing-file-annotation": 2,
     "flowtype/no-weak-types": [2, {
         "Object": false,
-        "Function": false
+        "Function": false,
+        "any": false
     }],
     "flowtype/object-type-delimiter": [
       2,

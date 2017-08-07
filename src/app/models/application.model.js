@@ -79,6 +79,26 @@ export default function(
             type: STRING,
             allowNull: true,
         },
+        rsvp: {
+            type: ENUM,
+            values: ['yes', 'no', 'undecided'],
+            validate: {
+                isIn: {
+                    args: [['yes', 'no', 'undecided']],
+                    msg: 'Must be a valid RSVP value',
+                },
+            },
+        },
+        decision: {
+            type: ENUM,
+            values: ['accepted', 'rejected', 'waitlisted', 'undecided'],
+            validate: {
+                isIn: {
+                    args: [['accepted', 'rejected', 'waitlisted', 'undecided']],
+                    msg: 'Must be a valid decision',
+                },
+            },
+        },
         application_status: {
             type: ENUM,
             values: ['not_started', 'complete', 'in_progress'],

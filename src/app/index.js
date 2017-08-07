@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
+import responseTime from 'response-time';
 import Dropbox from 'dropbox';
 
 import UploadService from './services/upload.service';
@@ -45,9 +46,8 @@ export default class App {
         this.express.use(helmet.xssFilter());
         this.express.use(helmet.noSniff());
         this.express.use(helmet.ieNoOpen());
-        this.express.use(helmet.hidePoweredBy({ 
-            setTo: 'PHP 5.6.0' 
-        }));
+        this.express.use(helmet.hidePoweredBy());
+        this.express.use(responseTime());
     }
 
     routes() {

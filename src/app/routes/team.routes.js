@@ -1,92 +1,59 @@
 // @flow
 
-import Sequelize from 'sequelize';
 import express from 'express';
-import debug from 'debug';
 
 import teamController from '../controllers/team.controller';
+import { wrap } from '../middleware';
+import { normalizeString } from '../utils';
 import { 
-    wrap,
-} from '../middleware';
-import {
-    InternalServerError,
     BadRequestError,
-    EntityValidationError,
     NotFoundError,
-    TeamError,
 } from '../errors';
 
-const log = debug('api:team');
-
 export default function(app: express$Application) {
-    let teamRouter = express.Router();
+    const teamRouter = express.Router();
 
+
+    const getTeamByName = async (req: $Request, res: $Response) => {
+        const teamName = normalizeString(req.body.name);
+
+        if (!teamName) {
+            throw new BadRequestError('Must provide a team name');
+        }
+
+        const team = await teamController.getTeamByName(teamName);
+
+        if (team) {
+            res.json({
+                team,
+            });
+        } else {
+            throw new NotFoundError('Team was not found');
+        }
+    };
+    
     const createOrJoinTeam = async (req: $Request, res: $Response) => {
-        let teamName = req.body.name,
-            userId = parseInt(req.body.user_id);
-
+        const userId = parseInt(req.body.user_id),
+            teamName = normalizeString(req.body.name);
 
         if (!userId) {
             throw new BadRequestError('Must provide a valid id');
         }
 
         if (!teamName) {
-            throw new BadRequestError('Must provide a team name');
+            throw new BadRequestError('Must provide a valid team name string');
         }
 
-        try {
-            let team = await teamController.createOrJoinTeam(teamName, userId);
-             res.json({
-                success: true,
-                team,
-            });
-
-        } catch(err) {
-            log(err);
-
-            if (err.name === 'Not Found Error') {
-                throw new NotFoundError(err.message);
-            }
-
-            if (err.name === 'Team Error') {
-                throw new TeamError(err.message);
-            }
-
-            if (err instanceof Sequelize.ValidationError) {
-                throw new EntityValidationError(null, err.errors);
-            }
-
-            throw new InternalServerError();
-        }
-    };
-
-    const getTeamByName = async (req: $Request, res: $Response) => {
-        let teamName = req.body.name;
-
-        if (!teamName) {
-            throw new BadRequestError('Must provide a team name');
-        }
-
-        try {
-            let team = await teamController.getTeamByName(teamName);
-
-            if (team) {
-                res.json({
-                    team
-                });
-            } else {
-                throw new NotFoundError('Team was not found');
-            }
-        } catch(err) {
-            log(err);
-
-            throw new InternalServerError();
-        }
+        const team = await teamController.createOrJoinTeam(teamName, userId);
+        res.json({
+            success: true,
+            team,
+        });
     };
 
     const leaveTeam = async (req: $Request, res: $Response) => {
-        let teamName = req.body.name,
-            userId = req.body.user_id;
+        const teamName = normalizeString(req.body.name),
+            userId = parseInt(req.body.user_id);
 
         if (!userId) {
             throw new BadRequestError('Must provide a valid id');
@@ -96,21 +63,8 @@ export default function(app: express$Application) {
             throw new BadRequestError('Must provide a team name');
         }
 
-        try {
-            let result = await teamController.leaveTeam(teamName, userId);
-            res.json(result);
-
-        } catch(err) {
-            log(err);
-
-            if (err.name === 'Not Found Error') {
-                throw new NotFoundError(err.message);
-            }
-
-            if (err.name === 'Team Error') {
-                throw new TeamError(err.message);
-            }
-        }
+        const result = await teamController.leaveTeam(teamName, userId);
+        res.json(result);
     };
 
     teamRouter.post('/', wrap(getTeamByName));

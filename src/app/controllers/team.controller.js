@@ -14,6 +14,15 @@ import type {
 
 const DEFAULT_MAX_TEAM_MEMBERS = 4;
 
+const getTeamById = async function(id: number): Promise<?models.Team> {
+    return models.Team.findOne({
+        where: { id, },
+        include: [{
+            model: models.User, 
+        }],
+    });
+};
+
 const getTeamByName = async function(name: string): Promise<?models.Team> { 
     return models.Team.findOne({
         where: { name: name.toLowerCase() },

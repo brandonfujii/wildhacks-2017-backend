@@ -65,6 +65,16 @@ module.exports = {
         values: ['not_started', 'complete', 'in_progress'],
         defaultValue: 'not_started'
       },
+      decision: {
+        type: Sequelize.ENUM,
+        values: ['accepted', 'rejected', 'waitlisted', 'undecided'],
+        defaultValue: 'undecided'
+      },
+      rsvp: {
+        type: Sequelize.ENUM,
+        values: ['yes', 'no', 'undecided'],
+        defaultValue: 'undecided'
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

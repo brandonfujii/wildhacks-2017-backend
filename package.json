@@ -7,7 +7,7 @@
     "node": "6.11.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest",
+    "test": "NODE_ENV=test jest --forceExit",
     "build": "gulp; DEBUG='api:*' node build",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db --all",
@@ -38,8 +38,11 @@
     "mime": "1.3.6",
     "multer": "1.3.0",
     "mysql2": "1.3.5",
+    "nodemailer": "4.0.1",
+    "nodemailer-smtp-transport": "2.7.4",
     "path": "0.12.7",
     "redis": "2.7.1",
+    "response-time": "2.3.2",
     "sequelize": "4.2.1"
   },
   "devDependencies": {
