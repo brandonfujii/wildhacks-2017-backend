@@ -34,7 +34,7 @@ export default function(app: express$Application) {
 
         res.json({
             success: true,
-            user
+            user,
         });
     };
 

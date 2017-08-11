@@ -1,6 +1,5 @@
 // @flow
 
-import sequelize from 'sequelize';
 import models from '../models';
 
 import userController from './user.controller';
@@ -8,9 +7,7 @@ import {
     NotFoundError,
     TeamError,
 } from '../errors';
-import type {
-    SuccessMessage
-} from '../types';
+import type { SuccessMessage } from '../types';
 
 const DEFAULT_MAX_TEAM_MEMBERS = 4;
 
@@ -93,9 +90,9 @@ const createOrJoinTeam = async function(name: string, userId: number): Promise<?
 };
 
 const leaveTeam = async function(name: string, userId: number): Promise<SuccessMessage> {
-    const t = await models.sequelize.transaction();
-
     return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+
         try {
             let [ teamToBeRemoved, user ] = await Promise.all([
                     getTeamByName(name),
@@ -108,13 +105,16 @@ const leaveTeam = async function(name: string, userId: number): Promise<SuccessM
                         team_id: null,
                     });
 
-                    resolve({ success: true });
+                    resolve({ 
+                        success: true, 
+                        message: null 
+                    });
                 } else {
-                    throw new TeamError(`User is not a team member of ${teamToBeRemoved.name}`);
+                    reject(new TeamError(`User is not a team member of ${teamToBeRemoved.name}`));
                 }
 
             } else {
-                throw new NotFoundError('Team or user was not found');
+                reject(new NotFoundError('Team or user was not found'));
             } 
 
             await t.commit();
@@ -130,5 +130,3 @@ export default {
     createOrJoinTeam,
     leaveTeam,
 };
-
-

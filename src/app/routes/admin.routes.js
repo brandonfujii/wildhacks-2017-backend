@@ -7,7 +7,8 @@ import debug from 'debug';
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
 
-import { isEmail } from '../utils';
+import { isEmail, normalizeString } from '../utils';
+import type { SuccessMessage } from '../types';
 import { 
     wrap,
     authMiddleware,
@@ -24,56 +25,29 @@ const log = debug('api:admin');
 export default function(app: express$Application) {
     let adminRouter = express.Router();
 
-    const registerAdminUser = async (req: $Request, res: $Response) => {
-        const {
-            email,
-            password,
-        } = req.body;
+    const registerAdmin = async (req: $Request, res: $Response) => {
+        const email = normalizeString(req.body.email);
+        const password = normalizeString(req.body.password);
+        const privilege = normalizeString(req.body.privilege);
 
-
-        if (isEmail(email) && password) {
-            try {
-                let admin = await authController.createUser({
-                                                    email,
-                                                    password,
-                                                    privilege: 'admin'
-                                                });
-                res.json({ 
-                    success: true,
-                    user: admin
-                });
-            } catch(err) {
-                log(err);
-
-                if (err instanceof Sequelize.ValidationError) {
-                   throw new EntityValidationError(null, err.errors);
-                }
-                throw new InternalServerError();
-            }
-        } else {
+        if (!isEmail(email) || !password) {
             throw new BadRequestError('You must supply a valid email and password');
         }
-    };
 
-    const deleteUserById = async (req: $Request, res: $Response) => {
-        let userId = parseInt(req.query.id);
+        const admin = await authController.createUser({
+            email,
+            password,
+            privilege: 'admin',
+        });
 
-        if (userId) {
-            try {
-                let result = await userController.deleteUserById(userId);
-                return res.json(result);
-            } catch(err) {
-                log(err);
-                throw new InternalServerError();
-            }
-        }
-
-        throw new BadRequestError('You must supply a valid id');
+        res.json({
+            success: true,
+            user: admin,
+        });
     };
 
     adminRouter.use(authMiddleware);
     adminRouter.use(adminMiddleware);
-    adminRouter.post('/register', registerAdminUser);
-    adminRouter.delete('/user/delete', deleteUserById);
+    adminRouter.post('/register', registerAdmin);
     app.use('/admin', adminRouter)
 }

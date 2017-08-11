@@ -18,6 +18,8 @@ import {
     adminRoutes,
     applicationRoutes,
     teamRoutes,
+    talkRoutes,
+    eventRoutes,
 } from './routes';
 
 import {
@@ -54,11 +56,15 @@ export default class App {
         this.express.all('*', httpMiddleware);
 
         // Routes
-        userRoutes(this.express);
-        authRoutes(this.express);
-        adminRoutes(this.express);
-        applicationRoutes(this.express, this.resumeStore);
-        teamRoutes(this.express);
+        ((app: express$Application) => {
+            userRoutes(app);
+            authRoutes(app);
+            adminRoutes(app);
+            applicationRoutes(app, this.resumeStore);
+            teamRoutes(app);
+            talkRoutes(app);
+            eventRoutes(app);
+        })(this.express);
 
         // Test ping
         this.express.get('/ping', (req: $Request, res: $Response) => {

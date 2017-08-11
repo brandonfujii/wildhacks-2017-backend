@@ -13,9 +13,8 @@ import {
 export default function(app: express$Application) {
     const teamRouter = express.Router();
 
-
     const getTeamByName = async (req: $Request, res: $Response) => {
-        const teamName = normalizeString(req.body.name);
+        const teamName = normalizeString(req.query.name);
 
         if (!teamName) {
             throw new BadRequestError('Must provide a team name');
@@ -67,7 +66,7 @@ export default function(app: express$Application) {
         res.json(result);
     };
 
-    teamRouter.post('/', wrap(getTeamByName));
+    teamRouter.get('/', wrap(getTeamByName));
     teamRouter.post('/join', wrap(createOrJoinTeam));
     teamRouter.post('/leave', wrap(leaveTeam));
     app.use('/team', teamRouter);

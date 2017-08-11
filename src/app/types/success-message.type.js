@@ -1,7 +1,8 @@
 // @flow
 
 type SuccessMessage = {
-    success: boolean
+    success: boolean,
+    message: ?string
 };
 
 export type { SuccessMessage };

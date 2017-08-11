@@ -18,20 +18,6 @@ const getResumeByApplicationId = async function(applicationId: number): Promise<
     });
 };
 
-const _findAndUpdateResume = async function(t: sequelize.Transaction, applicationId: number,
-    filename: string): Promise<?models.Resume> {
-
-    return models.Resume.update({
-            filename,
-        }, {
-            where: {
-                application_id: applicationId,
-            },
-            returning: true,
-            plain: true,
-        }, { transaction: t, });
-};
-
 const _createResume = async function(t: sequelize.Transaction, applicationId: number, 
     filename: string): Promise<?models.Resume> {
 

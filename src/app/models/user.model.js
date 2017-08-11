@@ -71,6 +71,10 @@ export default function(
         User.hasOne(models.Token);
         User.hasOne(models.Application);
         User.belongsTo(models.Team);
+        User.hasMany(models.Talk);
+        User.belongsToMany(models.Event, {
+            through: models.CheckIn,
+        });
     }
 
     // Instance Methods

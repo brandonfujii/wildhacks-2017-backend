@@ -2,16 +2,34 @@
 
 module.exports = {
   up: function(queryInterface, Sequelize) {
-    return queryInterface.createTable('teams', {
+    return queryInterface.createTable('talks', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      user_id: {
+          type: Sequelize.INTEGER,
+          onDelete: 'CASCADE',
+          allowNull: false,
+          references: {
+            model: 'users',
+            key: 'id'
+          }
+      },
       name: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      description: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      upvotes: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0
       },
       created_at: {
         allowNull: false,
@@ -21,15 +39,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    })
-    .then(function() {
-      return queryInterface.addConstraint('teams', ['name'], {
-        type: 'unique'
-      });
     });
-
   },
   down: function(queryInterface, Sequelize) {
-    return queryInterface.dropTable('teams');
+    return queryInterface.dropTable('talks');
   }
 };

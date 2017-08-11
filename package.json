@@ -7,7 +7,7 @@
     "node": "6.11.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest --forceExit",
+    "test": "NODE_ENV=test jest --forceExit --verbose",
     "build": "gulp; DEBUG='api:*' node build",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db --all",

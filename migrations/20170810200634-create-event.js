@@ -2,7 +2,7 @@
 
 module.exports = {
   up: function(queryInterface, Sequelize) {
-    return queryInterface.createTable('teams', {
+    return queryInterface.createTable('events', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,6 +12,14 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      meta_value: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      description: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
       created_at: {
         allowNull: false,
@@ -23,13 +31,12 @@ module.exports = {
       }
     })
     .then(function() {
-      return queryInterface.addConstraint('teams', ['name'], {
+      return queryInterface.addConstraint('events', ['meta_value'], {
         type: 'unique'
       });
     });
-
   },
   down: function(queryInterface, Sequelize) {
-    return queryInterface.dropTable('teams');
+    return queryInterface.dropTable('events');
   }
 };
