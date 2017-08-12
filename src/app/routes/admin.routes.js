@@ -1,12 +1,8 @@
 // @flow
 
 import express from 'express';
-import Sequelize from 'sequelize';
-import debug from 'debug';
 
 import authController from '../controllers/auth.controller';
-import userController from '../controllers/user.controller';
-
 import { isEmail, normalizeString } from '../utils';
 import type { SuccessMessage } from '../types';
 import { 
@@ -14,16 +10,10 @@ import {
     authMiddleware,
     adminMiddleware
 } from '../middleware';
-import {
-    EntityValidationError,
-    InternalServerError,
-    BadRequestError,
-} from '../errors';
-
-const log = debug('api:admin');
+import { BadRequestError } from '../errors';
 
 export default function(app: express$Application) {
-    let adminRouter = express.Router();
+    const adminRouter = express.Router();
 
     const registerAdmin = async (req: $Request, res: $Response) => {
         const email = normalizeString(req.body.email);

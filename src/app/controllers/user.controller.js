@@ -3,6 +3,7 @@
 import Sequelize from 'sequelize';
 import models from '../models';
 
+import EmailService from '../services/email.service';
 import eventController from './event.controller';
 import type { SuccessMessage } from '../types';
 import { NotFoundError } from '../errors';
@@ -39,6 +40,7 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<?
         include: [
             { model: models.Token },
             { model: models.Application },
+            { model: models.Event },
         ]
     });
 };
@@ -55,6 +57,7 @@ const getUserByEmail = async function(email: string): Promise<?models.User> {
         include: [
             { model: models.Token },
             { model: models.Application },
+            { model: models.Event },
         ]
     });
 };
