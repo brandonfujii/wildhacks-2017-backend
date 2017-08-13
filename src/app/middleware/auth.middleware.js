@@ -22,16 +22,12 @@ const _stripToken = function(authHeader: string): ?string {
 const authMiddleware = async function(req: $Request, res: $Response, next: express$NextFunction): Promise<void> {
     let accessToken = req.headers['x-access-token'];
 
-    console.log(req, req.originalMethod);
-
     if (req.originalMethod === 'OPTIONS') {
-        console.log("ITS OKAY TO MOVE FORWARD");
         next();
         return;
     }
 
     if (accessToken) {
-        console.log("ACCESS TOKEN", accessToken);
         let token = _stripToken(accessToken);
 
         if (!token) {
