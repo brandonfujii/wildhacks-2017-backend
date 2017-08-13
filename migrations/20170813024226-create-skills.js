@@ -25,6 +25,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
+    })
+    .then(function() {
+      return queryInterface.addConstraint('skills', ['meta_value'], {
+        type: 'unique'
+      });
     });
   },
   down: function(queryInterface, Sequelize) {

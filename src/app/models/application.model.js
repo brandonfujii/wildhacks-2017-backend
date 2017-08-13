@@ -121,6 +121,9 @@ export default function(
             onDelete: 'CASCADE',
         });
         Application.hasOne(models.Resume);
+        Application.belongsToMany(models.Skill, {
+            through: models.ApplicationSkill
+        });
     };
 
     const _isApplicationComplete = function(application: Application, appValidations: Array<string> = []): boolean {

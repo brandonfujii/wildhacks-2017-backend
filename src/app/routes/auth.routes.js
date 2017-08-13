@@ -56,7 +56,6 @@ export default function(app: express$Application) {
                     if (tokenPair) {
                         let userRet = tokenPair.user.toJSON();
                         userRet.token = tokenPair.token.toJSON();
-                        console.log(userRet);
 
                         return res.json({
                             user: userRet,
