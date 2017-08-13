@@ -22,20 +22,15 @@ export default function(app: express$Application) {
 
     const getUserPage = async (req: $Request, res: $Response) => {
         const pageNumber = parseInt(req.query.page),
-            limit = parseInt(req.query.limit) 
-                ? parseInt(req.query.limit)
-                : undefined;
+            limit = parseInt(req.query.limit) ? parseInt(req.query.limit) : undefined;
 
         if (!pageNumber || pageNumber < 1) {
             throw new BadRequestError('Please supply a valid integer page number greater than 1');
         }
 
-        const users = await userController.getUsers(pageNumber, limit);
-    
-        res.json({ 
-            page: pageNumber,
-            users: users ? users : [],
-        });
+        const userPage = await userController.getUserPage(pageNumber, limit);
+        console.log(userPage);
+        res.json(userPage);
     };
 
     const getSingleUser = async (req: $Request, res: $Response) => {

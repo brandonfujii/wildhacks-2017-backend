@@ -8,19 +8,40 @@ import eventController from './event.controller';
 import type { SuccessMessage } from '../types';
 import { NotFoundError } from '../errors';
 
+const getUsers = async function(limit: number = 10, offset: number): Promise<Array<models.User>> {
+    return models.User.findAll({
+        limit,
+        offset
+    });
+};
+
+const getUserCount = async function(): Promise<number> {
+    return models.User.count();
+};
+
 /** 
  * Gets a page of users based on a page number and page limit
  * @param   {number}    pageNumber - the # that corresponds to a subset of Users
  * @param   {number}         limit - the # of users per page      
- * @returns {Promise<Array<User>>} - returns Promise containing an
- * array of User instances
+ * @returns {Promise<Object>} - returns Promise containing an
+ * array of User instances, page number, page size, and number of total users
  */
-const getUsers = async function(pageNumber: number = 1, limit: number = 10): Promise<Object> {
-    const offset = pageNumber < 1 ? 0 : --pageNumber * limit; // zero-index page number
+const getUserPage = async function(pageNumber: number = 1, limit: number = 10): Promise<Object> {
+    const offset = pageNumber < 1 ? 0 : (pageNumber - 1) * limit; // zero-index page number
 
-    return models.User.findAll({
-        limit,
-        offset
+    return new Promise(async (resolve, reject) => {
+        const [users, count] = await Promise.all([
+                getUsers(limit, offset),
+                getUserCount(),
+            ]);
+
+        resolve({
+            page: pageNumber,
+            pageSize: limit, 
+            totalPages: Math.ceil(count / limit),
+            totalUsers: count,
+            users: users ? users : [],
+        });
     });
 };
 
@@ -170,7 +191,7 @@ const checkInToEvent = async function(eventId: number, userId: number): Promise<
 };
 
 export default {
-    getUsers,
+    getUserPage,
     getUserByIdAndEmail,
     getUserByEmail,
     getUserById,
