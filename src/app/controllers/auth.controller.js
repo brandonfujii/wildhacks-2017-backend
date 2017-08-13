@@ -6,9 +6,11 @@ import jwt from 'jsonwebtoken';
 
 import models from '../models';
 import tokenController from './token.controller';
+import userController from './user.controller';
 import { isEmail, to } from '../utils';
 import {
-    LoginError
+    LoginError,
+    EntityAlreadyExistsError,
 } from '../errors';
 
 /** 
@@ -31,15 +33,23 @@ const createUser = async function(options: Object): Promise<models.User> {
     } = options;
 
     return new Promise(async (resolve, reject) => {
-        const t = await models.sequelize.transaction();
+        const [t, existingUser] = await Promise.all([
+                    models.sequelize.transaction(),
+                    userController.getUserByEmail(email),
+                ]);
+
         let user; 
         try {
+            if (existingUser) {
+                throw new EntityAlreadyExistsError('An account with that email already exists!', 'email');
+            }
+            
             user = await models.User
                         .create(options, { transaction: t });
             await t.commit();
         } catch(err) {
-            await t.rollback();
             reject(err);
+            await t.rollback();
         }
 
         resolve(user);

@@ -10,6 +10,7 @@ import UnauthorizedError from './unauthorized.error';
 import ForbiddenError from './forbidden.error';
 import TokenExpirationError from './token-expiration.error';
 import EntityTooLargeError from './entity-too-large.error';
+import EntityAlreadyExistsError from './entity-already-exists.error';
 
 // Server Errors
 import InternalServerError from './internal-server.error';
@@ -30,4 +31,5 @@ module.exports = {
     LoginError,
     UnauthorizedError,
     TeamError,
+    EntityAlreadyExistsError,
 };

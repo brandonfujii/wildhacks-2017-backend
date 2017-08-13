@@ -54,7 +54,13 @@ export default function(app: express$Application) {
                     const tokenPair = await authController.checkToken(verifiedUser);
 
                     if (tokenPair) {
-                        return res.json(tokenPair);
+                        let userRet = tokenPair.user.toJSON();
+                        userRet.token = tokenPair.token.toJSON();
+                        console.log(userRet);
+
+                        return res.json({
+                            user: userRet,
+                        });
                     }
                 }
             }
