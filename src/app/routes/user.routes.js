@@ -29,7 +29,6 @@ export default function(app: express$Application) {
         }
 
         const userPage = await userController.getUserPage(pageNumber, limit);
-        console.log(userPage);
         res.json(userPage);
     };
 

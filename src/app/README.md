@@ -123,8 +123,8 @@ Certain endpoints are admin-protected, meaning that they require either a `privi
   ```
 ## Events
 
- #### GET `event/all?page=:page&limit=:limit`
- Retrieves a page of users. Page corresponds to the page number, which is indexed at 1. The limit corresponds to the number of users on each page. Page number defaults to 1 and the limit defaults to 10.
+ #### GET `event/all`
+ Retrieves all events
 
  #### GET `event?id=:id`
  Get event by id

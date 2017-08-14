@@ -14,19 +14,9 @@ export default function(app: express$Application) {
     const eventRouter = express.Router();
 
     const getEventPage = async (req: $Request, res: $Response) => {
-        const pageNumber = parseInt(req.query.page),
-            limit = parseInt(req.query.limit) 
-                ? parseInt(req.query.limit)
-                : undefined;
-
-        if (!pageNumber || pageNumber < 1) {
-            throw new BadRequestError('Please supply a valid integer page number greater than 1');
-        }
-
-        const events = await eventController.getEvents(pageNumber, limit);
+        const events = await eventController.getEvents();
     
         res.json({ 
-            page: pageNumber,
             events: events ? events : [],
         });
     };
