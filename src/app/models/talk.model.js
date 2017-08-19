@@ -13,7 +13,7 @@ export default function(
     } = DataTypes;
 
     const Talk = sequelize.define('Talk', {
-        user_id: {
+        speaker_id: {
             type: INTEGER,
             onDelete: 'CASCADE',
             allowNull: false,
@@ -30,10 +30,6 @@ export default function(
             type: STRING,
             allowNull: false,
         },
-        upvotes: {
-            type: INTEGER,
-            defaultValue: 0,
-        },
     }, {
         timestamps: true,
         underscored: true,
@@ -42,7 +38,13 @@ export default function(
 
     // Class Methods
     Talk.associate = function(models: Object) {
-        Talk.belongsTo(models.User);
+        Talk.belongsTo(models.User, {
+            as: 'speaker',
+        });
+        Talk.belongsToMany(models.User, {
+            as: 'upvoters',
+            through: models.Upvote,
+        });
     };
 
     return Talk;

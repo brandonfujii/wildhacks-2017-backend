@@ -5,10 +5,10 @@ import express from 'express';
 import teamController from '../controllers/team.controller';
 import { wrap } from '../middleware';
 import { normalizeString } from '../utils';
-import { 
+import {
     BadRequestError,
     NotFoundError,
-} from '../errors';
+    UnauthorizedError } from '../errors';
 
 export default function(app: express$Application) {
     const teamRouter = express.Router();
@@ -32,18 +32,18 @@ export default function(app: express$Application) {
     };
     
     const createOrJoinTeam = async (req: $Request, res: $Response) => {
-        const userId = parseInt(req.body.user_id),
-            teamName = normalizeString(req.body.name);
+        const teamName = normalizeString(req.body.name),
+            owner = req.requester;
 
-        if (!userId) {
-            throw new BadRequestError('Must provide a valid id');
+        if (!owner || !owner.id) {
+            throw new UnauthorizedError('You cannot create or join a team without being signed in');
         }
 
         if (!teamName) {
             throw new BadRequestError('Must provide a valid team name string');
         }
 
-        const team = await teamController.createOrJoinTeam(teamName, userId);
+        const team = await teamController.createOrJoinTeam(teamName, owner.id);
         res.json({
             success: true,
             team,
@@ -52,17 +52,17 @@ export default function(app: express$Application) {
 
     const leaveTeam = async (req: $Request, res: $Response) => {
         const teamName = normalizeString(req.body.name),
-            userId = parseInt(req.body.user_id);
+            user = req.requester;
 
-        if (!userId) {
-            throw new BadRequestError('Must provide a valid id');
+        if (!user || !user.id) {
+            throw new UnauthorizedError('You cannot leave a team without being signed in');
         }
 
         if (!teamName) {
             throw new BadRequestError('Must provide a team name');
         }
 
-        const result = await teamController.leaveTeam(teamName, userId);
+        const result = await teamController.leaveTeam(teamName, user.id);
         res.json(result);
     };
 

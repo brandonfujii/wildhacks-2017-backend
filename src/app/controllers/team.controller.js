@@ -9,7 +9,7 @@ import {
 } from '../errors';
 import type { SuccessMessage } from '../types';
 
-const DEFAULT_MAX_TEAM_MEMBERS = 4;
+export const DEFAULT_MAX_TEAM_MEMBERS = 4;
 
 const getTeamById = async function(id: number): Promise<?models.Team> {
     return models.Team.findOne({
@@ -94,7 +94,7 @@ const leaveTeam = async function(name: string, userId: number): Promise<SuccessM
         const t = await models.sequelize.transaction();
 
         try {
-            let [ teamToBeRemoved, user ] = await Promise.all([
+            let [teamToBeRemoved, user] = await Promise.all([
                     getTeamByName(name),
                     userController.getUserById(userId),
                 ]);

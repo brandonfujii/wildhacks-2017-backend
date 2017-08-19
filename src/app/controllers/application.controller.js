@@ -15,9 +15,9 @@ import type {
     ResumeFile,
 } from '../types';
 
-const VALID_DECISIONS = ['accepted', 'rejected', 'waitlisted', 'undecided'];
-const VALID_RSVP_VALUES = ['yes', 'no', 'undecided'];
-const VALID_APPLICATION_PROPERTIES = ['first_name', 'last_name', 'age', 'ethnicity', 'grad_year', 'school', 'major', 'personal_website', 'num_prev_hackathons', 'github_username', 'rsvp'];
+export const VALID_DECISIONS = ['accepted', 'rejected', 'waitlisted', 'undecided'];
+export const VALID_RSVP_VALUES = ['yes', 'no', 'undecided'];
+export const VALID_APPLICATION_PROPERTIES = ['first_name', 'last_name', 'age', 'ethnicity', 'grad_year', 'school', 'major', 'personal_website', 'num_prev_hackathons', 'github_username', 'rsvp'];
 
 const getApplicationById = async function(id: number): Promise<?models.Application> {
     return models.Application.findOne({

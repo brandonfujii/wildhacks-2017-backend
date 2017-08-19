@@ -17,10 +17,11 @@ gulp.task('scripts', function() {
 
 gulp.task('flow', function() {
   return gulp.src(SOURCE_FILE_PATH)
-            .pipe(flow({ 
+            .pipe(
+                flow({
                     killFlow: false, 
                     declarations: './flow-typed' 
-                    })
+                })
             );
 });
 
@@ -28,4 +29,4 @@ gulp.task('watch', ['flow', 'scripts'], function() {
     gulp.watch(SOURCE_FILE_PATH, ['flow', 'scripts']);
 });
 
-gulp.task('default', ['flow', 'scripts']);
+gulp.task('default', ['scripts']);

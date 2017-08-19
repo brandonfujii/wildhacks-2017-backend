@@ -4,15 +4,10 @@ import express from 'express';
 
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
-import { 
-    isEmail,
-    normalizeString,
-} from '../utils';
+
 import { wrap } from '../middleware';
-import {
-    BadRequestError,
-    LoginError,
-} from '../errors';
+import { isEmail, normalizeString } from '../utils';
+import { BadRequestError, LoginError } from '../errors';
 
 export default function(app: express$Application) {
     const authRouter = express.Router();
@@ -20,7 +15,6 @@ export default function(app: express$Application) {
     const registerUser = async (req: $Request, res: $Response) => {
         const email = normalizeString(req.body.email);
         const password = normalizeString(req.body.password);
-        const privilege = normalizeString(req.body.privilege);
 
         if (!isEmail(email) || !password) {
             throw new BadRequestError('You must supply a valid email and password');

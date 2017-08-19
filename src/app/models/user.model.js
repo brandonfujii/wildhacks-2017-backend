@@ -71,11 +71,16 @@ export default function(
         User.hasOne(models.Token);
         User.hasOne(models.Application);
         User.belongsTo(models.Team);
-        User.hasMany(models.Talk);
         User.belongsToMany(models.Event, {
             through: models.CheckIn,
         });
-    }
+        User.hasMany(models.Talk, {
+            foreignKey: 'speaker_id',
+        });
+        User.belongsToMany(models.Talk, {
+            through: models.Upvote,
+        });
+    };
 
     // Instance Methods
     User.prototype.verifyPassword = async function(candidatePassword: string): Promise<boolean> {
@@ -100,7 +105,7 @@ export default function(
                 }
             }); 
         }); 
-    }
+    };
 
     const _createHash = async function(password: string, salt: string): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -112,17 +117,20 @@ export default function(
                 }
             });
         })
-    }
+    };
 
     const hashPassword = async function(password: string): Promise<string> {
-        return _createSalt() 
-            .then(salt => {
-                return _createHash(password, salt);
-            })
-            .catch(err => {
-                console.error(err);
-            });
-    }
+        return new Promise(async (resolve, reject) => {
+            try {
+                const salt = await _createSalt();
+                const hash = await _createHash(password, salt);
+
+                resolve(hash);
+            } catch(err) {
+                reject(err);
+            }
+        });
+    };
 
     // Hooks
     User.beforeCreate(async function(user: User, options: User.options): Promise<void> {

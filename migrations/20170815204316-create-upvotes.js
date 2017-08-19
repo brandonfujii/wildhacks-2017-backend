@@ -2,14 +2,14 @@
 
 module.exports = {
   up: function(queryInterface, Sequelize) {
-    return queryInterface.createTable('talks', {
+    return queryInterface.createTable('upvotes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      speaker_id: {
+      user_id: {
           type: Sequelize.INTEGER,
           onDelete: 'CASCADE',
           allowNull: false,
@@ -18,13 +18,14 @@ module.exports = {
             key: 'id'
           }
       },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      description: {
-        type: Sequelize.STRING,
-        allowNull: false
+      talk_id: {
+          type: Sequelize.INTEGER,
+          onDelete: 'CASCADE',
+          allowNull: false,
+          references: {
+            model: 'talks',
+            key: 'id'
+          }
       },
       created_at: {
         allowNull: false,
@@ -37,6 +38,6 @@ module.exports = {
     });
   },
   down: function(queryInterface, Sequelize) {
-    return queryInterface.dropTable('talks');
+    return queryInterface.dropTable('upvotes');
   }
 };

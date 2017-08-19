@@ -1,4 +1,4 @@
-// @flow 
+// @flow
 
 import fs from 'fs';
 import path from 'path';
@@ -22,13 +22,7 @@ type DatabaseConfigType = {
 };
 
 const configureDatabase = function(config: DatabaseConfigType): Sequelize {
-    let database: Sequelize;
-
-    if (config.use_env_variable) {
-      database = new Sequelize(process.env[config.use_env_variable]);
-    } else {
-      database = new Sequelize(config.database, config.username, config.password, config);
-    }
+    const database: Sequelize = new Sequelize(config.database, config.username, config.password, config);
 
     database.authenticate()
         .then(() => {
@@ -41,10 +35,9 @@ const configureDatabase = function(config: DatabaseConfigType): Sequelize {
     return database;
 }
 
-let sequelize: Sequelize = configureDatabase(config);
+const sequelize: Sequelize = configureDatabase(config);
 
-fs
-    .readdirSync(__dirname)
+fs.readdirSync(__dirname)
     .filter(file => {
         return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
     })

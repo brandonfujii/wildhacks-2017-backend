@@ -5,10 +5,7 @@ import express from 'express';
 import eventController from '../controllers/event.controller';
 
 import { authMiddleware, wrap } from '../middleware';
-import {
-    BadRequestError,
-    NotFoundError,
-} from '../errors';
+import { NotFoundError } from '../errors';
 
 export default function(app: express$Application) {
     const eventRouter = express.Router();

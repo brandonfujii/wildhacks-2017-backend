@@ -4,8 +4,7 @@ import express from 'express';
 
 import authController from '../controllers/auth.controller';
 import { isEmail, normalizeString } from '../utils';
-import type { SuccessMessage } from '../types';
-import { 
+import {
     wrap,
     authMiddleware,
     adminMiddleware
@@ -18,7 +17,6 @@ export default function(app: express$Application) {
     const registerAdmin = async (req: $Request, res: $Response) => {
         const email = normalizeString(req.body.email);
         const password = normalizeString(req.body.password);
-        const privilege = normalizeString(req.body.privilege);
 
         if (!isEmail(email) || !password) {
             throw new BadRequestError('You must supply a valid email and password');
@@ -38,6 +36,6 @@ export default function(app: express$Application) {
 
     adminRouter.use(authMiddleware);
     adminRouter.use(adminMiddleware);
-    adminRouter.post('/register', registerAdmin);
+    adminRouter.post('/register', wrap(registerAdmin));
     app.use('/admin', adminRouter)
 }

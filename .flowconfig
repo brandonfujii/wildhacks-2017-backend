@@ -1,10 +1,19 @@
 [ignore]
 .*/node_modules/.*
+.*/build/.*
+.*/config/.*
+.*/bin/.*
+.*/migrations/.*
+.*/static/.*
+.*/tests/.*
 
 [include]
+./src/**/*.js
 
 [libs]
 flow-typed
 
 [options]
+sharedmemory.hash_table_pow=21
+all=true
 module.ignore_non_literal_requires=true

@@ -3,15 +3,16 @@
 import express from 'express';
 
 import talkController from '../controllers/talk.controller';
-import { wrap } from '../middleware';
+import { wrap, authMiddleware } from '../middleware';
 import { normalizeString } from '../utils';
 import { 
     BadRequestError,
     NotFoundError,
+    UnauthorizedError,
 } from '../errors';
 
-export const TALK_NAME_CHAR_LIMIT = 50;
-export const TALK_DESCRIPTION_CHAR_LIMIT = 300;
+const TALK_NAME_CHAR_LIMIT = 50;
+const TALK_DESCRIPTION_CHAR_LIMIT = 300;
 
 export default function(app: express$Application) {
     const talkRouter = express.Router();
@@ -53,12 +54,12 @@ export default function(app: express$Application) {
     };
 
     const createTalk = async (req: $Request, res: $Response) => {
-        const userId = parseInt(req.body.user_id),
-            name = req.body.name,
-            description = req.body.description; 
+        const name = req.body.name,
+            description = req.body.description,
+            speaker = req.requester;
 
-        if (!userId) {
-            throw new BadRequestError('Must provide valid user id');
+        if (!speaker || !speaker.id) {
+            throw new UnauthorizedError('You cannot create a talk without being signed in');
         }
 
         if (typeof name !== 'string' && name.length > TALK_NAME_CHAR_LIMIT) {
@@ -69,15 +70,36 @@ export default function(app: express$Application) {
             throw new BadRequestError('Must provide a valid description string under 300 characters');
         }
 
-        const talk = await talkController.createTalk(userId, name, description);
+        const talk = await talkController.createTalk(speaker.id, name, description);
 
         res.json({
             talk,
         });
     };
 
+    const upvoteTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.body.talk_id);
+        const requester = req.requester;
+
+        if (!requester || !requester.id) {
+            throw new UnauthorizedError('You cannot upvote a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid user id');
+        }
+
+        const talk = await talkController.upvoteTalk(talkId, requester);
+
+        res.json({
+            talk,
+        });
+    };
+
+    talkRouter.use(authMiddleware);
     talkRouter.get('/', wrap(getTalkById));
     talkRouter.get('/all', wrap(getTalkPage));
     talkRouter.post('/create', wrap(createTalk));
+    talkRouter.put('/upvote', wrap(upvoteTalk));
     app.use('/talk', talkRouter);
 }

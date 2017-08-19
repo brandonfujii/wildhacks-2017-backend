@@ -3,18 +3,11 @@
 import _ from 'lodash';
 import express from 'express';
 
-import appController from '../controllers/application.controller';
-import resumeController from '../controllers/resume.controller';
+import appController, { VALID_DECISIONS, VALID_RSVP_VALUES } from '../controllers/application.controller';
 import UploadService from '../services/upload.service';
 
-import { 
-    wrap,
-    authMiddleware,
-} from '../middleware';
+import { wrap } from '../middleware';
 import { BadRequestError } from '../errors';
-
-const VALID_DECISIONS = ['accepted', 'rejected', 'waitlisted', 'undecided'];
-const VALID_RSVP_VALUES = ['yes', 'no', 'undecided'];
 
 export default function(app: express$Application, resumeStore: UploadService) {
     const appRouter = express.Router();
@@ -38,8 +31,6 @@ export default function(app: express$Application, resumeStore: UploadService) {
         if (!userId) {
             throw new BadRequestError('Must provide a valid user id');
         }
-
-        console.log(skills);
 
         const result = await appController
             .handleApplicationAndResume(userId, {
