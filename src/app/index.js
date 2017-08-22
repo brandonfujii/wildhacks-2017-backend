@@ -39,6 +39,7 @@ export default class App {
     }
 
     middleware() {
+        this.express.set('trust proxy', true);
         this.express.use(bodyParser.json({ 
             type: 'application/*',
             limit: '10mb'
