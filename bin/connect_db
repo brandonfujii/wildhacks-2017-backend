@@ -1,14 +1,13 @@
 #!/usr/bin/env node
-'use strict';
 
 const mysql = require('mysql2');
 
-function createDbConnection(config) {
+function DatabaseConnection(config) {
     var connection = null; 
 
     if (config) {
         var host = config.host,
-            user = config.user,
+            user = config.username,
             password = config.password;
 
         if (host && user && password) {
@@ -28,7 +27,8 @@ function createDbConnection(config) {
 
     }
 
-    throw new Error('Must provide a valid `db` property {host, user, password} in your configuration json file');
+    console.error('Must provide a valid sequelize configuration file');
+    process.exit(1);
 }
 
-module.exports = createDbConnection;
+module.exports = DatabaseConnection;

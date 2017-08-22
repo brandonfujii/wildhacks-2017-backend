@@ -14,9 +14,8 @@
   2. Run `npm run db:create`. It's a script that logs into mysql with the credentials you provide in `config/sequelize.json` and creates the local databases you'll need.
   3. Check that this works by signing into your mysql account. 
     - `mysql -u <username> -p`
-    - Once you enter in your password and login, `show databases;`. You should see `wildhacks2017_dev`, `wildhacks2017_prod`, and `wildhacks2017_prod`.
-  4. Now you can run `npm run db:migrate` to create your tables within your development database.
+  4. You should see a newly created database with the name specified in your `sequelize.json`
 
 ## Running
-  1. `npm run build` to transpile the code into `build/` and run the server.
+  1. To run locally, `npm run build` to transpile the code into `build/` and run the server.
   2. Check `/ping`

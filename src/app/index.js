@@ -5,7 +5,6 @@ import config from 'config';
 import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
-import Sequelize from 'sequelize';
 import responseTime from 'response-time';
 import Dropbox from 'dropbox';
 
@@ -20,6 +19,7 @@ import {
     teamRoutes,
     talkRoutes,
     eventRoutes,
+    publicRoutes,
 } from './routes';
 
 import {
@@ -65,6 +65,7 @@ export default class App {
             teamRoutes(app);
             talkRoutes(app);
             eventRoutes(app);
+            publicRoutes(app);
         })(this.express);
 
         // Test ping

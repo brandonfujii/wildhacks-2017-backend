@@ -1,46 +1,64 @@
 #!/usr/bin/env node
-'use strict';
 
-const async = require('async');
-const config = require('config');
-const createDbConnection = require('./connect_db');
-const configExists = require('./utils').configExists;
-const connection = createDbConnection(config.get('db'));
+const migrate = require('child_process').exec('sequelize db:migrate');
+const DatabaseConnection = require('./connect_db');
+const config = require('./utils').config;
+const env = process.env.NODE_ENV || 'development';
 
-if (configExists()) {
-    const databases = require('../config/sequelize.json');
-    
-    async.forEachOf(databases, 
-        function(environment, key, done) {
-            var databaseName = (typeof environment.database == 'string') ? 
-                                    environment.database : 
-                                    key;
-            var create = `CREATE DATABASE IF NOT EXISTS ${databaseName}`;
-
-            connection.query(
-                create,
-                function(err, results, fields) {
-                    if (err == null) {
-                        var status = '> '; 
-
-                        if (parseInt(results.warningStatus) <= 0) {
-                            status += `${databaseName} created. ${results.affectedRows} row(s) affected.`;
-                        } else {
-                            status += `${databaseName} already exists.`;
-                        }
-
-                        console.log(status);
-                        done();
-                    } else {
-                        throw new Error(err);
-                    }
-                }
-            );
-        },
-        function(err) {
-            if (err) throw new Error(err);
-            console.log('> Done. Closing connection...\n');
-            connection.end();
-        }
-    );
+function runChildProcess(child) {
+    return new Promise(function (resolve, reject) {
+        child.addListener('error', reject);
+        child.addListener('exit', resolve);
+    });
 }
+
+migrate.stdout.on('data', function (data) {
+    console.log("\x1b[32m", data);
+});
+
+migrate.stderr.on('data', function (data) {
+    console.error('Migration error:', data);
+});
+
+function createDatabase(connection, databaseName) {
+    return new Promise(function(resolve, reject) {
+        connection.query(
+            `CREATE DATABASE IF NOT EXISTS ${databaseName}`,
+            function (err, results, fields) {
+                if (err == null) {
+                    var status = '> ';
+
+                    if (parseInt(results.warningStatus) <= 0) {
+                        status += `${databaseName} created. ${results.affectedRows} row(s) affected.`;
+                    } else {
+                        status += `${databaseName} already exists.`;
+                    }
+                    resolve(status);
+                } else {
+                    reject(err);
+                }
+            }
+        );
+    });
+};
+
+config()
+    .then(function(config) {
+        const pool = config[env];
+        const conn = DatabaseConnection(pool);
+        const databaseName = pool.database;
+        return createDatabase(conn, databaseName);
+    })
+    .then(function(status) {
+        console.log(status);
+        return runChildProcess(migrate);
+    })
+    .then(function(code) {
+        console.log("\x1b[0m", 'Successfully migrated tables!');
+        process.exit(code);
+    })
+    .catch(function(err) {
+        console.error(err);
+        process.exit(1);
+    });
+

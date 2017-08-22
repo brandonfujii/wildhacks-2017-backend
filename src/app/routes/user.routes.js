@@ -21,12 +21,10 @@ export default function(app: express$Application) {
     const userRouter = express.Router();
 
     const getUserPage = async (req: $Request, res: $Response) => {
-        const pageNumber = parseInt(req.query.page),
+        let pageNumber = parseInt(req.query.page),
             limit = parseInt(req.query.limit) ? parseInt(req.query.limit) : undefined;
 
-        if (!pageNumber || pageNumber < 1) {
-            throw new BadRequestError('Please supply a valid integer page number greater than 1');
-        }
+        if (!pageNumber || pageNumber < 1) pageNumber = 1;
 
         const userPage = await userController.getUserPage(pageNumber, limit);
         res.json(userPage);

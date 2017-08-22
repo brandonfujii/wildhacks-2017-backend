@@ -1,0 +1,19 @@
+{
+  "port": 8080,
+  "production": false,
+  "auth": {
+    "secret": "",
+    "expiresIn": "7d",
+    "gatekey": ""
+  },
+  "dropbox": {
+    "name": "",
+    "key": "",
+    "secret": "",
+    "access_token": ""
+  },
+  "sendgrid": {
+    "key": "",
+    "email": ""
+  }
+}

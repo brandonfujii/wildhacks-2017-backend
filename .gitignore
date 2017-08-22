@@ -3,6 +3,7 @@ node_modules/
 *.log
 build/
 config/*.json
+!config/*.template.json
 static/resumes/*
 !static/resumes/.gitkeep
 .DS_Store

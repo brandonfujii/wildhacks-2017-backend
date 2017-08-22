@@ -1,28 +1,32 @@
 // @flow
 
 import fs from 'fs';
+import _ from 'lodash';
 import path from 'path';
 import Sequelize from 'sequelize';
-import _ from 'lodash';
+import config from 'config';
 import debug from 'debug';
+import type { DatabaseConfig } from '../types';
 
 const log = debug('api:db');
-const basename: string = path.basename(module.filename);
-const env: string = process.env.NODE_ENV || 'development';
-const config = require('../../../config/sequelize.json')[env];
+const basename = path.basename(module.filename);
+const env = process.env.NODE_ENV || 'development';
 
-let db: Object = {};
+const getSequelizeFile = function(): Object {
+    let cfg = {};
 
-type DatabaseConfigType = {
-    username: string,
-    password: string,
-    database: string,
-    host: string,
-    dialect: string
+    try {
+        cfg = require(`${config.util.getEnv('NODE_CONFIG_DIR')}/sequelize.json`);
+    } catch(err) {
+        log('Must provide a sequelize configuration file');
+        process.exit(1);
+    }
+
+    return cfg;
 };
 
-const configureDatabase = function(config: DatabaseConfigType): Sequelize {
-    const database: Sequelize = new Sequelize(config.database, config.username, config.password, config);
+const configureDatabase = function(cfg: DatabaseConfig): Sequelize {
+    const database: Sequelize = new Sequelize(cfg.database, cfg.username, cfg.password, cfg);
 
     database.authenticate()
         .then(() => {
@@ -30,12 +34,15 @@ const configureDatabase = function(config: DatabaseConfigType): Sequelize {
         })
         .catch(err => {
             log(`Unable to connect to database: ${err.message}`);
+            process.exit(1);
         });
 
     return database;
-}
+};
 
-const sequelize: Sequelize = configureDatabase(config);
+const databaseConfig = getSequelizeFile()[env];
+const sequelize = configureDatabase(databaseConfig);
+let db: Object = {};
 
 fs.readdirSync(__dirname)
     .filter(file => {
@@ -49,7 +56,7 @@ fs.readdirSync(__dirname)
 const toJSON = function(): Object {
     let body = Object.assign({}, this.get());
     return _.mapKeys(body, (v, k) => _.camelCase(k));
-}
+};
 
 Object.keys(db).forEach(modelName => {
     let model = db[modelName];

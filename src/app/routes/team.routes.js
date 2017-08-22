@@ -3,7 +3,7 @@
 import express from 'express';
 
 import teamController from '../controllers/team.controller';
-import { wrap } from '../middleware';
+import { wrap, authMiddleware } from '../middleware';
 import { normalizeString } from '../utils';
 import {
     BadRequestError,
@@ -34,6 +34,7 @@ export default function(app: express$Application) {
     const createOrJoinTeam = async (req: $Request, res: $Response) => {
         const teamName = normalizeString(req.body.name),
             owner = req.requester;
+        console.log(owner);
 
         if (!owner || !owner.id) {
             throw new UnauthorizedError('You cannot create or join a team without being signed in');
@@ -66,6 +67,7 @@ export default function(app: express$Application) {
         res.json(result);
     };
 
+    teamRouter.use(authMiddleware);
     teamRouter.get('/', wrap(getTeamByName));
     teamRouter.post('/join', wrap(createOrJoinTeam));
     teamRouter.post('/leave', wrap(leaveTeam));

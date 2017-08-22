@@ -6,7 +6,7 @@ import express from 'express';
 import appController, { VALID_DECISIONS, VALID_RSVP_VALUES } from '../controllers/application.controller';
 import UploadService from '../services/upload.service';
 
-import { wrap } from '../middleware';
+import { wrap, authMiddleware, adminMiddleware } from '../middleware';
 import { BadRequestError } from '../errors';
 
 export default function(app: express$Application, resumeStore: UploadService) {
@@ -25,15 +25,15 @@ export default function(app: express$Application, resumeStore: UploadService) {
     };
 
     const updateApplication = async (req: $Request, res: $Response) => {
-        const userId = parseInt(req.body.user_id);
-        const skills = _validateSkills(_.isArray(req.body.skills) ? req.body.skills : [])
+        const skills = _validateSkills(_.isArray(req.body.skills) ? req.body.skills : []);
+        const owner = req.requester;
 
-        if (!userId) {
-            throw new BadRequestError('Must provide a valid user id');
+        if (!owner || !owner.id) {
+            throw new BadRequestError('Must be signed in to update an application');
         }
 
         const result = await appController
-            .handleApplicationAndResume(userId, {
+            .handleApplicationAndResume(owner.id, {
                 ...req.body,
                 skills,
             }, req.file, resumeStore);
@@ -67,20 +67,20 @@ export default function(app: express$Application, resumeStore: UploadService) {
     };
 
     const updateRsvp = async (req: $Request, res: $Response) => {
-        const applicationId = parseInt(req.body.application_id);
-        const rsvp = typeof req.body.rsvp === 'string' 
+        const owner = req.requester;
+        const rsvp = typeof req.body.rsvp === 'string'
             ? req.body.rsvp.toLowerCase()
             : null;
 
-        if (!applicationId) {
-            throw new BadRequestError('Must provide an application id');
+        if (!owner || !owner.id) {
+            throw new BadRequestError('Must be signed in to update an application');
         }
 
         if (!rsvp || !VALID_RSVP_VALUES.includes(rsvp)) {
             throw new BadRequestError('Must provide a valid rsvp string');
         }
 
-        const application = await appController.updateRsvp(applicationId, rsvp);
+        const application = await appController.updateRsvp(owner.id, rsvp);
 
         res.json({
             success: true,
@@ -88,8 +88,9 @@ export default function(app: express$Application, resumeStore: UploadService) {
         });
     };
 
+    appRouter.use(authMiddleware);
     appRouter.put('/update', resumeStore.multer().single('resume'), wrap(updateApplication));
-    appRouter.put('/judge', wrap(judgeApplication));
+    appRouter.put('/judge', adminMiddleware, wrap(judgeApplication));
     appRouter.put('/rsvp', wrap(updateRsvp));
     app.use('/application', appRouter);
 }

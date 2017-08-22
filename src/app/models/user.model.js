@@ -59,6 +59,9 @@ export default function(
         application_id: {
             type: INTEGER,
         },
+        team_id: {
+            type: INTEGER,
+        },
     }, {
         timestamps: true,
         underscored: true,
@@ -75,6 +78,7 @@ export default function(
             through: models.CheckIn,
         });
         User.hasMany(models.Talk, {
+            as: 'talks',
             foreignKey: 'speaker_id',
         });
         User.belongsToMany(models.Talk, {

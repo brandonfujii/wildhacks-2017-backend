@@ -7,6 +7,7 @@ import applicationRoutes from './application.routes';
 import teamRoutes from './team.routes';
 import talkRoutes from './talk.routes';
 import eventRoutes from './event.routes';
+import publicRoutes from './public.routes';
 
 module.exports.userRoutes = userRoutes;
 module.exports.authRoutes = authRoutes;
@@ -15,3 +16,4 @@ module.exports.applicationRoutes = applicationRoutes;
 module.exports.teamRoutes = teamRoutes;
 module.exports.talkRoutes = talkRoutes;
 module.exports.eventRoutes = eventRoutes;
+module.exports.publicRoutes = publicRoutes;

@@ -30,18 +30,22 @@ const getUserPage = async function(pageNumber: number = 1, limit: number = 10): 
     const offset = pageNumber < 1 ? 0 : (pageNumber - 1) * limit; // zero-index page number
 
     return new Promise(async (resolve, reject) => {
-        const [users, count] = await Promise.all([
+        try {
+            const [users, count] = await Promise.all([
                 getUsers(limit, offset),
                 getUserCount(),
             ]);
 
-        resolve({
-            page: pageNumber,
-            pageSize: limit, 
-            totalPages: Math.ceil(count / limit),
-            totalUsers: count,
-            users: users ? users : [],
-        });
+            resolve({
+                page: pageNumber,
+                pageSize: limit,
+                totalPages: Math.ceil(count / limit),
+                totalUsers: count,
+                users: users ? users : [],
+            });
+        } catch(err) {
+            reject(err);
+        }
     });
 };
 
@@ -65,6 +69,10 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<?
                 include: [models.Skill],
             },
             { model: models.Event },
+            {
+                model: models.Talk,
+                as: 'talks',
+            },
         ]
     });
 };
@@ -85,6 +93,10 @@ const getUserByEmail = async function(email: string): Promise<?models.User> {
                 include: [models.Skill],
             },
             { model: models.Event },
+            {
+                model: models.Talk,
+                as: 'talks',
+            },
         ]
     });
 };
@@ -105,6 +117,10 @@ const getUserById = async function(id: number): Promise<?models.User> {
                 include: [models.Skill],
             },
             { model: models.Event },
+            {
+                model: models.Talk,
+                as: 'talks',
+            },
         ]
     });
 };
@@ -191,6 +207,7 @@ const checkInToEvent = async function(eventId: number, userId: number): Promise<
 };
 
 export default {
+    getUserCount,
     getUserPage,
     getUserByIdAndEmail,
     getUserByEmail,

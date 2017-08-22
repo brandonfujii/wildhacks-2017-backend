@@ -25,6 +25,14 @@ const getApplicationById = async function(id: number): Promise<?models.Applicati
     });
 };
 
+const getApplicationbyUserId = async function(userId: number): Promise<?models.Application> {
+  return models.Application.findOne({
+      where: {
+          user_id: userId,
+      }
+  });
+};
+
 const _saveApplication = async function(t: sequelize.Transaction, userId: number, options: Object): Promise<?models.User> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -172,12 +180,12 @@ const judgeApplication = async function(applicationId: number, decision: string)
     });
 };
 
-const updateRsvp = async function(applicationId: number, rsvpValue: string): Promise<?models.Application> {
+const updateRsvp = async function(userId: number, rsvpValue: string): Promise<?models.Application> {
     return new Promise(async (resolve, reject) => {
         if (VALID_RSVP_VALUES.includes(rsvpValue)) {
             const [ t, application ] = await Promise.all([
                 models.sequelize.transaction(),
-                getApplicationById(applicationId),
+                getApplicationbyUserId(userId),
             ]);
 
             try {
@@ -190,7 +198,7 @@ const updateRsvp = async function(applicationId: number, rsvpValue: string): Pro
                     await t.commit();
 
                 } else {
-                    throw new NotFoundError('Could not find application with given id');
+                    throw new NotFoundError('Application does not exist');
                 }
 
             } catch(err) {
