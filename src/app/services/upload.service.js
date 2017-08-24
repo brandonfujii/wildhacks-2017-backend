@@ -84,7 +84,7 @@ UploadService.prototype.upload = async function(file: ResumeFile): Promise<Uploa
             const destination = `${this.dropboxPath}/${file.filename}`;
 
             if (contents) {
-                await this.dropboxStore.filesUpload({ 
+                this.dropboxStore.filesUpload({
                     path: destination,
                     contents, 
                 });
