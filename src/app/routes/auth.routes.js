@@ -5,9 +5,9 @@ import express from 'express';
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
 
-import { wrap } from '../middleware';
+import { wrap, authMiddleware } from '../middleware';
 import { isEmail, normalizeString } from '../utils';
-import { BadRequestError, LoginError } from '../errors';
+import { BadRequestError, LoginError, UnauthorizedError } from '../errors';
 
 export default function(app: express$Application) {
     const authRouter = express.Router();
@@ -20,7 +20,7 @@ export default function(app: express$Application) {
             throw new BadRequestError('You must supply a valid email and password');
         }
 
-        const user = await authController.createUser({
+        const { user, token } = await authController.createUser({
             email,
             password,
             privilege: 'user',
@@ -29,6 +29,7 @@ export default function(app: express$Application) {
         res.json({
             success: true,
             user,
+            verificationToken: token,
         });
     };
 
@@ -60,9 +61,23 @@ export default function(app: express$Application) {
         }
 
         throw new LoginError();
-    }
+    };
+
+    const verifyUser = async (req: $Request, res: $Response) => {
+        const verificationToken = req.params.token;
+        const requester = req.requester;
+
+        if (!requester || !requester.id) {
+            throw new UnauthorizedError('You must be signed in to verify account');
+        }
+
+        const result = await authController.concludeVerification(verificationToken, requester.id);
+
+        res.json(result);
+    };
 
     authRouter.post('/register', wrap(registerUser));
     authRouter.post('/login', wrap(loginUser));
+    authRouter.post('/verify/:token', authMiddleware, wrap(verifyUser));
     app.use('/auth', authRouter);
 }

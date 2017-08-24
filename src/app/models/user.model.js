@@ -14,7 +14,8 @@ export default function(
     const {
         STRING,
         ENUM,
-        INTEGER
+        INTEGER,
+        BOOLEAN,
     } = DataTypes;
 
     const User = sequelize.define('User', {
@@ -53,7 +54,14 @@ export default function(
                 },
             },
         },
+        is_verified: {
+            type: BOOLEAN,
+            defaultValue: false,
+        },
         token_id: {
+            type: INTEGER,
+        },
+        verification_token_id: {
             type: INTEGER,
         },
         application_id: {
@@ -72,6 +80,7 @@ export default function(
      // Class Methods
     User.associate = function(models: Object) {
         User.hasOne(models.Token);
+        User.hasOne(models.VerificationToken);
         User.hasOne(models.Application);
         User.belongsTo(models.Team);
         User.belongsToMany(models.Event, {

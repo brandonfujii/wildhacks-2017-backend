@@ -55,7 +55,7 @@ config()
     })
     .then(function(code) {
         console.log("\x1b[0m", 'Successfully migrated tables!');
-        process.exit(code);
+        process.exit(0);
     })
     .catch(function(err) {
         console.error(err);

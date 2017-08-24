@@ -36,7 +36,7 @@ const authMiddleware = async function(req: $Request, res: $Response, next: expre
         }
 
         try {
-            let tokenInstance = await tokenController.getTokenByValue(token);
+            let tokenInstance = await tokenController.getAuthTokenByValue(token);
             let userInfo = await tokenController.verifyToken(tokenInstance);
 
             if (userInfo) {

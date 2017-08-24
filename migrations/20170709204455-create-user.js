@@ -29,7 +29,14 @@ module.exports = {
         values: ['mentor', 'student'],
         defaultValue: 'student'
       },
+      is_verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       token_id: {
+        type: Sequelize.INTEGER
+      },
+      verification_token_id: {
         type: Sequelize.INTEGER
       },
       application_id: {

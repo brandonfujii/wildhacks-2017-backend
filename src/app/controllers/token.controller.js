@@ -4,40 +4,54 @@ import jwt from 'jsonwebtoken';
 import config from 'config'
 import models from '../models';
 
-import {
-    TokenExpirationError
-} from '../errors';
+import { TokenExpirationError } from '../errors';
 
 /** 
- * Finds a token based on user id
+ * Finds an auth token based on user id
  * @param   {number} userId - a foreign user id key that corresponds
  * to the token's owner
  * @returns {Promise<Token>} - returns the owner of the token; if
  * owner does not exist, returns null
  */
-const getTokenByUserId = async function(userId: number): Promise<?models.Token> {
+const getAuthTokenByUserId = async function(userId: number): Promise<?models.Token> {
     return models.Token.findOne({
         where: {
             user_id: userId
         }
     });
-}
+};
 
 /** 
- * Finds a token instance based on its token value
+ * Finds an auth token instance based on its token value
  * @param   {number}   value - a token string value
  * @returns {Promise<Token>} - returns the owner of the token; if
  * owner does not exist, returns null
  */
-const getTokenByValue = async function(value: string): Promise<?models.Token> {
+const getAuthTokenByValue = async function(value: string): Promise<?models.Token> {
     return models.Token.findOne({
         where: {
             value
         }
     });
-}
+};
 
-const verifyToken = async function(token: models.Token): Promise<Object> {
+const getVerificationTokenByUserId = async function(userId: number): Promise<models.VerificationToken> {
+    return models.VerificationToken.findOne({
+        where: {
+            user_id: userId
+        }
+    });
+};
+
+const getVerificationTokenByValue = async function(value: string): Promise<?models.VerificationToken> {
+    return models.VerificationToken.findOne({
+        where: {
+            value
+        }
+    });
+};
+
+const verifyToken = async function(token: models.Token | models.VerificationToken): Promise<Object> {
     return new Promise((resolve, reject) => {
         return jwt.verify(token.value, config.get('auth.secret'), (err, decoded) => {
             if (err) {
@@ -53,10 +67,12 @@ const verifyToken = async function(token: models.Token): Promise<Object> {
             resolve(decoded);
         });
     });
-}
+};
 
 export default {
-    getTokenByUserId,
-    getTokenByValue,
+    getAuthTokenByUserId,
+    getAuthTokenByValue,
+    getVerificationTokenByUserId,
+    getVerificationTokenByValue,
     verifyToken,
 };
