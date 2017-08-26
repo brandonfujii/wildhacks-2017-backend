@@ -15,7 +15,7 @@ function dropDatabase(connection, databaseName) {
                     if (parseInt(results.warningStatus) <= 0) {
                         status += `${databaseName} dropped. ${results.affectedRows} row(s) affected.`;
                     } else {
-                        status += `${databaseName} already exists.`;
+                        status += `${databaseName} does not exist.`;
                     }
                     resolve(status);
                 } else {
