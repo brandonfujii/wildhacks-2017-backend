@@ -25,7 +25,7 @@ const getApplicationById = async function(id: number): Promise<?models.Applicati
     });
 };
 
-const getApplicationbyUserId = async function(userId: number): Promise<?models.Application> {
+const getApplicationByUserId = async function(userId: number): Promise<?models.Application> {
   return models.Application.findOne({
       where: {
           user_id: userId,
@@ -185,7 +185,7 @@ const updateRsvp = async function(userId: number, rsvpValue: string): Promise<?m
         if (VALID_RSVP_VALUES.includes(rsvpValue)) {
             const [ t, application ] = await Promise.all([
                 models.sequelize.transaction(),
-                getApplicationbyUserId(userId),
+                getApplicationByUserId(userId),
             ]);
 
             try {
@@ -211,6 +211,7 @@ const updateRsvp = async function(userId: number, rsvpValue: string): Promise<?m
 
 export default {
     getApplicationById,
+    getApplicationByUserId,
     handleApplicationAndResume,
     judgeApplication,
     updateRsvp,

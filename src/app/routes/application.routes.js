@@ -7,7 +7,7 @@ import appController, { VALID_DECISIONS, VALID_RSVP_VALUES } from '../controller
 import UploadService from '../services/upload.service';
 
 import { wrap, authMiddleware, adminMiddleware } from '../middleware';
-import { BadRequestError } from '../errors';
+import { BadRequestError, NotFoundError } from '../errors';
 
 export default function(app: express$Application, resumeStore: UploadService) {
     const appRouter = express.Router();
@@ -23,6 +23,23 @@ export default function(app: express$Application, resumeStore: UploadService) {
             return skill;
         });
     };
+
+    const getApplicationByUserId = async (req: $Request, res: $Response) => {
+        const owner = req.requester;
+
+        if (!owner || !owner.id) {
+            throw new BadRequestError('Must be signed in to update an application');
+        }
+
+        const application = await appController.getApplicationByUserId(owner.id);
+
+        if (application) {
+            res.json({ application });
+        } else {
+            throw new NotFoundError('The user has not submitted an application');
+        }
+
+    }
 
     const updateApplication = async (req: $Request, res: $Response) => {
         const skills = _validateSkills(_.isArray(req.body.skills) ? req.body.skills : []);
@@ -89,6 +106,7 @@ export default function(app: express$Application, resumeStore: UploadService) {
     };
 
     appRouter.use(authMiddleware);
+    appRouter.get('/', wrap(getApplicationByUserId));
     appRouter.put('/update', resumeStore.multer().single('resume'), wrap(updateApplication));
     appRouter.put('/judge', adminMiddleware, wrap(judgeApplication));
     appRouter.put('/rsvp', wrap(updateRsvp));
