@@ -1,11 +1,15 @@
 // @flow
 
-import express from 'express';
-import _ from 'lodash';
+import mung from 'express-mung';
 
-const ResponseMiddleware = function(req: $Request, res: $Response, next: express$NextFunction) {
+const addMeta = function(body: Object, req: $Request, res: $Response) {
+    if (!body.meta) {
+        body.meta = {
+            statusCode: 200,
+        };
+    }
 
-    next();
-}
+    return body;
+};
 
-export default ResponseMiddleware; 
+export default mung.json(addMeta);

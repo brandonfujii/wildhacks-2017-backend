@@ -31,6 +31,7 @@
     "debug": "2.6.8",
     "dropbox": "2.5.7",
     "express": "4.15.3",
+    "express-mung": "0.4.6",
     "fs": "0.0.1-security",
     "gulp": "3.9.1",
     "gulp-babel": "6.1.2",
