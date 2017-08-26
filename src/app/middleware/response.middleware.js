@@ -2,7 +2,7 @@
 
 import mung from 'express-mung';
 
-const addMeta = function(body: Object, req: $Request, res: $Response) {
+const addMeta = (body: Object, req: $Request, res: $Response) => {
     if (!body.meta) {
         body.meta = {
             statusCode: 200,

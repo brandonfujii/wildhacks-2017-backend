@@ -23,6 +23,7 @@ import {
 } from './routes';
 
 import {
+    requestMiddleware,
     responseMiddleware,
     httpMiddleware,
     errorHandler,
@@ -56,6 +57,7 @@ export default class App {
 
     routes() {
         this.express.all('*', httpMiddleware);
+        this.express.use(requestMiddleware);
         this.express.use(responseMiddleware);
 
         // Routes
