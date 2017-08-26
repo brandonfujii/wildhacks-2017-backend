@@ -11,10 +11,11 @@
 ## Database
   1. You'll need [mysql](https://www.mysql.com/). They have pretty good setup instructions. 
     - If you use a Mac and want the absolute no-hassle installation, first install [Homebrew](https://brew.sh) and then follow [these instructions](https://gist.github.com/nrollr/3f57fc15ded7dddddcc4e82fe137b58e).
-  2. Run `npm run db:create`. It's a script that logs into mysql with the credentials you provide in `config/sequelize.json` and creates the local databases you'll need.
-  3. Check that this works by signing into your mysql account. 
+  2. Add Sequelize CLI `npm i -g sequelize-cli`
+  3. Run `npm run db:create`. It's a script that logs into mysql with the credentials you provide in `config/sequelize.json` and creates the local databases you'll need.
+  4. Check that this works by signing into your mysql account. 
     - `mysql -u <username> -p`
-  4. You should see a newly created database with the name specified in your `sequelize.json`
+  5. You should see a newly created database with the name specified in your `sequelize.json`
 
 ## Running
   1. To run locally, `npm run build` to transpile the code into `build/` and run the server.
