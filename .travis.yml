@@ -6,5 +6,18 @@ cache:
   directories:
   - node_modules
 
+services:
+  - mysql
+
+before_install:
+  - mysql -u root -e 'CREATE DATABASE wildhacks;'
+  - mysql -u root -e "CREATE USER 'tester'@'localhost' IDENTIFIED BY 'tester';"
+  - mysql -u root -e "GRANT ALL ON wildhacks.* TO 'tester'@'localhost';"
+
+before_script:
+  - npm install -g sequelize-cli
+  - sequelize db:migrate
+
 script:
+  - npm run build
   - npm test
