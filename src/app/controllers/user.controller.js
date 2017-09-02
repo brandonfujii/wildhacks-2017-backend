@@ -64,15 +64,6 @@ const getUserByIdAndEmail = async function(id: number, email: string): Promise<?
         },
         include: [
             { model: models.Token },
-            { 
-                model: models.Application,
-                include: [models.Skill],
-            },
-            { model: models.Event },
-            {
-                model: models.Talk,
-                as: 'talks',
-            },
         ]
     });
 };
@@ -88,15 +79,6 @@ const getUserByEmail = async function(email: string): Promise<?models.User> {
         where: { email },
         include: [
             { model: models.Token },
-            { 
-                model: models.Application,
-                include: [models.Skill],
-            },
-            { model: models.Event },
-            {
-                model: models.Talk,
-                as: 'talks',
-            },
         ]
     });
 };

@@ -256,6 +256,33 @@ const sendVerification = async function(t: sequelize.Transaction, userId: number
     });
 };
 
+const resendVerification = async function(userId: number, email: string): Promise<models.VerificationToken> {
+    const t = await models.sequelize.transaction();
+
+    return new Promise(async resolve => {
+
+        let [existingVerificationToken, tokenValue] = await Promise.all([
+                tokenController.getVerificationTokenByUserId(userId),
+                randomToken(),
+            ]);
+
+        EmailService.sendVerificationEmail(email, tokenValue);
+
+        if (existingVerificationToken) { // resend email
+            const token = await existingVerificationToken.update({
+                value: tokenValue,
+            }, { transaction: t });
+            resolve(token);
+        } else {
+            const token = await _createVerificationTokenInstance(t, tokenValue, userId);
+            resolve(token);
+        }
+
+        await t.commit();
+    });
+};
+
+
 const concludeVerification = async function(tokenValue: string, userId: number): Promise<SuccessMessage> {
     return new Promise(async (resolve, reject) => {
         const t = await models.sequelize.transaction();
@@ -303,5 +330,6 @@ export default {
     createUser,
     verifyUser,
     checkToken,
+    resendVerification,
     concludeVerification,
 };

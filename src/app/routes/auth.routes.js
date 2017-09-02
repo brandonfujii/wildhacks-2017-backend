@@ -4,6 +4,7 @@ import express from 'express';
 
 import authController from '../controllers/auth.controller';
 import userController from '../controllers/user.controller';
+import tokenController from '../controllers/token.controller';
 
 import { wrap, authMiddleware } from '../middleware';
 import { isEmail, normalizeString } from '../utils';
@@ -76,8 +77,23 @@ export default function(app: express$Application) {
         res.json(result);
     };
 
+    const resendVerification = async (req: $Request, res: $Response) => {
+        const requester = req.requester;
+
+        if (!requester || !requester.id || !requester.email) {
+            throw new UnauthorizedError('You must be signed in to verify account');
+        }
+
+        const token = await authController.resendVerification(requester.id, requester.email);
+        
+        res.json({
+            token,
+        });
+    };
+
     authRouter.post('/register', wrap(registerUser));
     authRouter.post('/login', wrap(loginUser));
     authRouter.post('/verify/:token', authMiddleware, wrap(verifyUser));
+    authRouter.post('/resend', authMiddleware, wrap(resendVerification));
     app.use('/auth', authRouter);
 }

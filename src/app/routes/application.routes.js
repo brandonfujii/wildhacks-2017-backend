@@ -39,7 +39,7 @@ export default function(app: express$Application, resumeStore: UploadService) {
             throw new NotFoundError('The user has not submitted an application');
         }
 
-    }
+    };
 
     const updateApplication = async (req: $Request, res: $Response) => {
         const skills = _validateSkills(_.isArray(req.body.skills) ? req.body.skills : []);

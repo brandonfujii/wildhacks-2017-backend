@@ -111,6 +111,6 @@ UploadService.prototype.upload = async function(file: ResumeFile): Promise<Uploa
 
 UploadService.prototype.multer = function(): Multer {
     return this.m;
-}
+};
 
 export default UploadService;
