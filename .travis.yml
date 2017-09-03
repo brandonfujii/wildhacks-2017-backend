@@ -8,8 +8,8 @@ services:
 - mysql
 before_install:
 - openssl aes-256-cbc -K $encrypted_6affe5e9d3b0_key -iv $encrypted_6affe5e9d3b0_iv
-  -in test.tar.enc -out test.tar -d
-- tar xvf test.tar
+  -in test.tar.enc -out config/test.tar -d
+- tar xvf config/test.tar
 - mysql -e 'CREATE DATABASE wildhacks;'
 - mysql -u root -e "CREATE USER 'tester'@'localhost' IDENTIFIED BY 'Passw0rd!';"
 - mysql -u root -e "GRANT ALL ON wildhacks.* TO 'tester'@'localhost';"

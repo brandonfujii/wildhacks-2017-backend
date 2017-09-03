@@ -1,9 +1,9 @@
 flow-typed/
 node_modules/
 *.log
-test.tar
 build/
 config/*.json
+config/test.tar
 !config/*.template.json
 static/resumes/*
 !static/resumes/.gitkeep
