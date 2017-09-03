@@ -72,9 +72,8 @@ EmailService.prototype.sendVerificationEmail = async function(recipient: string,
     });
 };
 
-EmailService.prototype.sendResetPasswordEmail = async function(recipient: string): Promise<EmailResponse> {
+EmailService.prototype.sendResetPasswordEmail = async function(recipient: string, token: string): Promise<EmailResponse> {
     return new Promise(async (resolve, reject) => {
-        const token = await randomToken();
         const subject = 'Reset your password for your WildHacks account';
         const template = createTemplate(RESET_PASSWORD_EMAIL_CONTENT, 'token', 'footer');
 

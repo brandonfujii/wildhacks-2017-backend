@@ -91,9 +91,33 @@ export default function(app: express$Application) {
         });
     };
 
+    const resetPassword = async (req: $Request, res: $Response) => {
+        const newPassword = req.body.password,
+            token = req.params.token;
+
+        const user = await authController.resetPassword(token, newPassword);
+
+        res.json({
+            success: true,
+            user,
+        });
+    };
+
+    const sendPasswordRecovery = async (req: $Request, res: $Response) => {
+        const email = req.body.email;
+
+        const token = await authController.sendPasswordRecovery(email);
+
+        res.json({
+            token,
+        });
+    };
+
     authRouter.post('/register', wrap(registerUser));
     authRouter.post('/login', wrap(loginUser));
     authRouter.post('/verify/:token', authMiddleware, wrap(verifyUser));
     authRouter.post('/resend', authMiddleware, wrap(resendVerification));
+    authRouter.post('/reset/:token', wrap(resetPassword));
+    authRouter.post('/recover', wrap(sendPasswordRecovery));
     app.use('/auth', authRouter);
 }

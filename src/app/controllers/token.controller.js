@@ -51,6 +51,22 @@ const getVerificationTokenByValue = async function(value: string): Promise<?mode
     });
 };
 
+const getRecoveryTokenByUserId = async function(userId: number): Promise<models.RecoveryToken> {
+    return models.RecoveryToken.findOne({
+        where: {
+            user_id: userId
+        }
+    });
+};
+
+const getRecoveryTokenByValue = async function(value: string): Promise<?models.RecoveryToken> {
+    return models.RecoveryToken.findOne({
+        where: {
+            value
+        }
+    });
+};
+
 const verifyToken = async function(token: models.Token | models.VerificationToken): Promise<Object> {
     return new Promise((resolve, reject) => {
         return jwt.verify(token.value, config.get('auth.secret'), (err, decoded) => {
@@ -74,5 +90,7 @@ export default {
     getAuthTokenByValue,
     getVerificationTokenByUserId,
     getVerificationTokenByValue,
+    getRecoveryTokenByUserId,
+    getRecoveryTokenByValue,
     verifyToken,
 };

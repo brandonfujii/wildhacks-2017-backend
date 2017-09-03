@@ -259,29 +259,32 @@ const sendVerification = async function(t: sequelize.Transaction, userId: number
 const resendVerification = async function(userId: number, email: string): Promise<models.VerificationToken> {
     const t = await models.sequelize.transaction();
 
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let [existingVerificationToken, tokenValue] = await Promise.all([
+                    tokenController.getVerificationTokenByUserId(userId),
+                    randomToken(),
+                ]);
 
-        let [existingVerificationToken, tokenValue] = await Promise.all([
-                tokenController.getVerificationTokenByUserId(userId),
-                randomToken(),
-            ]);
+            EmailService.sendVerificationEmail(email, tokenValue);
 
-        EmailService.sendVerificationEmail(email, tokenValue);
+            if (existingVerificationToken) { // resend email
+                const token = await existingVerificationToken.update({
+                    value: tokenValue,
+                }, { transaction: t });
+                resolve(token);
+            } else {
+                const token = await _createVerificationTokenInstance(t, tokenValue, userId);
+                resolve(token);
+            }
 
-        if (existingVerificationToken) { // resend email
-            const token = await existingVerificationToken.update({
-                value: tokenValue,
-            }, { transaction: t });
-            resolve(token);
-        } else {
-            const token = await _createVerificationTokenInstance(t, tokenValue, userId);
-            resolve(token);
+            await t.commit();
+        } catch(err) {
+            reject(err);
+            await t.rollback();
         }
-
-        await t.commit();
     });
 };
-
 
 const concludeVerification = async function(tokenValue: string, userId: number): Promise<SuccessMessage> {
     return new Promise(async (resolve, reject) => {
@@ -326,10 +329,95 @@ const concludeVerification = async function(tokenValue: string, userId: number):
     });
 };
 
+const _createRecoveryTokenInstance = async function(t: sequelize.Transaction, token: string,
+                                                        userId: number): Promise<models.RecoveryToken> {
+    return new Promise(async resolve => {
+        const tokenInstance = await models.RecoveryToken.create({
+            user_id: userId,
+            value: token,
+        }, {transaction: t});
+
+        resolve(tokenInstance);
+    });
+};
+
+const sendPasswordRecovery = async function(email: string): Promise<models.RecoveryToken> {
+    const t = await models.sequelize.transaction();
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            const user = await userController.getUserByEmail(email);
+
+            if (!user) {
+                throw new NotFoundError('Account was not found!');
+            } else {
+                const [existingRecoveryToken, tokenValue] = await Promise.all([
+                    tokenController.getRecoveryTokenByUserId(user.id),
+                    randomToken(),
+                ]); 
+
+                EmailService.sendResetPasswordEmail(email, tokenValue);
+
+                if (existingRecoveryToken) {
+                    const token = await existingRecoveryToken.update({
+                        value: tokenValue,
+                    }, { transaction: t });
+                    resolve(token);
+                } else {
+                    const token = await _createRecoveryTokenInstance(t, tokenValue, user.id);
+                    resolve(token);
+                }
+
+                await t.commit();
+            }
+        } catch(err) {
+            reject(err);
+            await t.rollback();
+        }
+    });
+};
+
+const resetPassword = async function(tokenValue: string, newPassword: string): Promise<models.User> {
+    return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+
+        try {
+            const token = await tokenController.getRecoveryTokenByValue(tokenValue);
+
+            if (!token) {
+                throw new NotFoundError('Recovery token not found');
+            }
+
+            const user = await userController.getUserById(token.user_id);
+
+            if (!user) {
+                throw new NotFoundError('Account associated with this token does not exist');
+            }
+
+            await Promise.all([
+                user.update({
+                    password: newPassword,
+                }),
+                token.destroy({ force: true }, { transaction: t }),
+            ]);
+
+            resolve(user);
+
+            await t.commit();
+
+        } catch(err) {
+            reject(err);
+            await t.rollback();
+        }
+    });
+};
+
 export default {
     createUser,
     verifyUser,
     checkToken,
     resendVerification,
     concludeVerification,
+    sendPasswordRecovery,
+    resetPassword,
 };

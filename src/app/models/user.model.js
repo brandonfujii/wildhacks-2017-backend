@@ -147,12 +147,24 @@ export default function(
 
     // Hooks
     User.beforeCreate(async function(user: User, options: User.options): Promise<void> {
-        let hash = await hashPassword(user.password);
+        const hash = await hashPassword(user.password);
 
         if (hash) {
             user.password = hash;
         } else {
             throw new InternalServerError('Unable to create user right now. Please try again later');
+        }
+    });
+
+    User.beforeUpdate(async function(user: User, options: User.options): Promise<void> {
+        const modifiedKeys = Object.keys(user._changed);
+
+        if (modifiedKeys.includes('password')) {
+            const hash = await hashPassword(user.password);
+
+            if (hash) {
+                user.password = hash;
+            }
         }
     });
 
