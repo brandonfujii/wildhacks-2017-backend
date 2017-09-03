@@ -1,23 +1,23 @@
 language: node_js
-
 node_js:
-  - "6.11.0"
+- 6.11.0
 cache:
   directories:
   - node_modules
-
 services:
-  - mysql
-
+- mysql
 before_install:
-  - mysql -u root -e 'CREATE DATABASE wildhacks;'
-  - mysql -u root -e "CREATE USER 'tester'@'localhost' IDENTIFIED BY 'tester';"
-  - mysql -u root -e "GRANT ALL ON wildhacks.* TO 'tester'@'localhost';"
-
+- openssl aes-256-cbc -K $encrypted_6affe5e9d3b0_key -iv $encrypted_6affe5e9d3b0_iv
+  -in test.json.enc -out config/test.json -d
+- openssl aes-256-cbc -K $encrypted_6affe5e9d3b0_key -iv $encrypted_6affe5e9d3b0_iv
+  -in sequelize.json.enc -out config/sequelize.json -d
+- mysql -e 'CREATE DATABASE wildhacks;'
+- mysql -u root -e "CREATE USER 'tester'@'localhost' IDENTIFIED BY 'Passw0rd!';"
+- mysql -u root -e "GRANT ALL ON wildhacks.* TO 'tester'@'localhost';"
 before_script:
-  - npm install -g sequelize-cli
-  - sequelize db:migrate
-
+- npm install -g sequelize-cli
+- npm run flow-assets
+- sequelize db:migrate
 script:
-  - npm run build
-  - npm test
+- npm run build
+- npm test
