@@ -126,6 +126,7 @@ const leaveTeam = async function(name: string, userId: number): Promise<SuccessM
 };
 
 export default {
+    getTeamById,
     getTeamByName,
     createOrJoinTeam,
     leaveTeam,

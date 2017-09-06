@@ -13,14 +13,19 @@ import {
 export default function(app: express$Application) {
     const teamRouter = express.Router();
 
-    const getTeamByName = async (req: $Request, res: $Response) => {
+    const getTeamByNameOrId = async (req: $Request, res: $Response) => {
         const teamName = normalizeString(req.query.name);
+        const teamId = parseInt(req.query.id);
 
-        if (!teamName) {
-            throw new BadRequestError('Must provide a team name');
+        let team;
+
+        if (teamId) {
+            team = await teamController.getTeamById(teamId);
+        } else if (teamName) {
+            team = await teamController.getTeamByName(teamName);
+        } else {
+            throw new BadRequestError('Must provide a team name or id to fetch team');
         }
-
-        const team = await teamController.getTeamByName(teamName);
 
         if (team) {
             res.json({
@@ -34,7 +39,6 @@ export default function(app: express$Application) {
     const createOrJoinTeam = async (req: $Request, res: $Response) => {
         const teamName = normalizeString(req.body.name),
             owner = req.requester;
-        console.log(owner);
 
         if (!owner || !owner.id) {
             throw new UnauthorizedError('You cannot create or join a team without being signed in');
@@ -68,7 +72,7 @@ export default function(app: express$Application) {
     };
 
     teamRouter.use(authMiddleware);
-    teamRouter.get('/', wrap(getTeamByName));
+    teamRouter.get('/', wrap(getTeamByNameOrId));
     teamRouter.post('/join', wrap(createOrJoinTeam));
     teamRouter.post('/leave', wrap(leaveTeam));
     app.use('/team', teamRouter);
