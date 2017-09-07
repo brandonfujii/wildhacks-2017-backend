@@ -13,9 +13,21 @@ import {
 export default function(app: express$Application) {
     const teamRouter = express.Router();
 
+    const obfuscateEmail = (email) => {
+        const username = email.substring(0, email.indexOf('@') + 1);
+        const domain = email.substring(email.indexOf('@'));
+
+        if (username && domain) {
+            return `${username[0]}${(new Array(username.length - 1)).join('*')}${domain}`;
+        }
+
+        return email;
+    };
+
     const getTeamByNameOrId = async (req: $Request, res: $Response) => {
         const teamName = normalizeString(req.query.name);
         const teamId = parseInt(req.query.id);
+        const requester = req.requester;
 
         let team;
 
@@ -28,6 +40,16 @@ export default function(app: express$Application) {
         }
 
         if (team) {
+            if (team.Users.length) {
+                for (let i = 0, users = team.Users, len = team.Users.length; i < len; ++i) {
+                    const teamMember = users[i];
+
+                    if (teamMember.email !== requester.email) {
+                        team.Users[i].email = obfuscateEmail(teamMember.email);
+                    }
+                }
+            }
+
             res.json({
                 team,
             });

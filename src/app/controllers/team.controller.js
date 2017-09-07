@@ -16,11 +16,23 @@ const getTeamById = async function(id: number): Promise<?models.Team> {
         where: { id, },
         include: [{
             model: models.User, 
+            attributes: ['email'],
+
         }],
     });
 };
 
 const getTeamByName = async function(name: string): Promise<?models.Team> { 
+    return models.Team.findOne({
+        where: { name: name.toLowerCase() },
+        include: [{
+            model: models.User,
+            attributes: ['email'],
+        }],
+    });
+};
+
+const _getTeamByName = async function(name: string): Promise<?models.Team> { 
     return models.Team.findOne({
         where: { name: name.toLowerCase() },
         include: [{
@@ -50,7 +62,7 @@ const createOrJoinTeam = async function(name: string, userId: number): Promise<?
 
         try {
             let [ existingTeam, user ] = await Promise.all([
-                    getTeamByName(name),
+                    _getTeamByName(name),
                     userController.getUserById(userId),
                 ]);
 
@@ -95,7 +107,7 @@ const leaveTeam = async function(name: string, userId: number): Promise<SuccessM
 
         try {
             let [teamToBeRemoved, user] = await Promise.all([
-                    getTeamByName(name),
+                    _getTeamByName(name),
                     userController.getUserById(userId),
                 ]);
 
