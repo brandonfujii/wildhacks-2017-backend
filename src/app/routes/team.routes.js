@@ -13,7 +13,7 @@ import {
 export default function(app: express$Application) {
     const teamRouter = express.Router();
 
-    const obfuscateEmail = (email) => {
+    const _obfuscateEmail = (email) => {
         const username = email.substring(0, email.indexOf('@') + 1);
         const domain = email.substring(email.indexOf('@'));
 
@@ -22,6 +22,18 @@ export default function(app: express$Application) {
         }
 
         return email;
+    };
+
+    const _obfuscateTeamEmails = (team, requester) => {
+        if (!team.Users.length) return;
+
+        for (let i = 0, users = team.Users, len = team.Users.length; i < len; ++i) {
+            const teamMember = users[i];
+
+            if (teamMember.email !== requester.email) {
+                team.Users[i].email = _obfuscateEmail(teamMember.email);
+            }
+        }
     };
 
     const getTeamByNameOrId = async (req: $Request, res: $Response) => {
@@ -40,15 +52,7 @@ export default function(app: express$Application) {
         }
 
         if (team) {
-            if (team.Users.length) {
-                for (let i = 0, users = team.Users, len = team.Users.length; i < len; ++i) {
-                    const teamMember = users[i];
-
-                    if (teamMember.email !== requester.email) {
-                        team.Users[i].email = obfuscateEmail(teamMember.email);
-                    }
-                }
-            }
+            _obfuscateTeamEmails(team, requester);
 
             res.json({
                 team,
@@ -71,6 +75,11 @@ export default function(app: express$Application) {
         }
 
         const team = await teamController.createOrJoinTeam(teamName, owner.id);
+
+        if (team) {
+            _obfuscateTeamEmails(team, owner);
+        }
+
         res.json({
             success: true,
             team,
