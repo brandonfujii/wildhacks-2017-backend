@@ -33,9 +33,23 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true
       },
+      gender: {
+        type: Sequelize.ENUM,
+        allowNull: true,
+        values: ['male', 'female', 'non_binary', 'other', 'prefer_not_to_say'],
+        defaultValue: null
+      },
+      tshirt_size: {
+        type: Sequelize.ENUM,
+        allowNull: true,
+        values: ['small', 'medium', 'large', 'xl', 'xxl'],
+        defaultValue: null
+      },
       ethnicity: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: Sequelize.ENUM,
+        allowNull: true,
+        values: ['white', 'black', 'asian', 'native_american', 'pacific_islander', 'latino', 'two_or_more_races', 'other'],
+        defaultValue: null
       },
       grad_year: {
         type: Sequelize.INTEGER,

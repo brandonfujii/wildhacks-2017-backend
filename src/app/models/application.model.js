@@ -51,9 +51,41 @@ export default function(
             type: INTEGER,
             allowNull: true,
         },
-        ethnicity: {
-            type: STRING,
+        gender: {
+            type: ENUM,
             allowNull: true,
+            values: ['male', 'female', 'non-binary', 'other', 'prefer-not-to-say'],
+            defaultValue: null,
+            validate: {
+                isIn: {
+                    args: [[null, 'male', 'female', 'non-binary', 'other', 'prefer-not-to-say']],
+                    msg: 'Must be one of given options',
+                },
+            },
+        },
+        tshirt_size: {
+            type: ENUM,
+            allowNull: true,
+            values: ['small', 'medium', 'large', 'xl', 'xxl'],
+            defaultValue: null,
+            validate: {
+                isIn: {
+                    args: [[null,'small', 'medium', 'large', 'xl', 'xxl']],
+                    msg: 'Must be one of given options',
+                },
+            },
+        },
+        ethnicity: {
+            type: Sequelize.ENUM,
+            allowNull: true,
+            values: ['white', 'black', 'asian', 'native_american', 'pacific_islander', 'latino', 'two_or_more_races', 'other'],
+            defaultValue: null,
+            validate: {
+                isIn: {
+                    args: [[null, 'white', 'black', 'asian', 'native_american', 'pacific_islander', 'latino', 'two_or_more_races', 'other']],
+                    msg: 'Must be one of given options',
+                },
+            },
         },
         grad_year: {
             type: INTEGER,
