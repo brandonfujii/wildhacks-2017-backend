@@ -54,11 +54,11 @@ export default function(
         gender: {
             type: ENUM,
             allowNull: true,
-            values: ['male', 'female', 'non-binary', 'other', 'prefer-not-to-say'],
+            values: ['male', 'female', 'non_binary', 'other', 'prefer_not_to_say'],
             defaultValue: null,
             validate: {
                 isIn: {
-                    args: [[null, 'male', 'female', 'non-binary', 'other', 'prefer-not-to-say']],
+                    args: [[null, 'male', 'female', 'non_binary', 'other', 'prefer_not_to_say']],
                     msg: 'Must be one of given options',
                 },
             },
