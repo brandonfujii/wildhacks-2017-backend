@@ -11,9 +11,10 @@
     "node": "6.11.0"
   },
   "scripts": {
+    "postinstall": "./node_modules/.bin/flow-typed install",
     "test": "NODE_ENV=test jest --forceExit --verbose",
     "build": "gulp; node build",
-    "prod": "gulp; NODE_ENV='production' node build",
+    "prod": "gulp build; node build",
     "forever": "NODE_ENV='production' forever start build",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db",
@@ -49,9 +50,7 @@
     "path": "0.12.7",
     "response-time": "2.3.2",
     "sendgrid": "5.2.1",
-    "sequelize": "4.2.1"
-  },
-  "devDependencies": {
+    "sequelize": "4.2.1",
     "babel-eslint": "7.2.3",
     "babel-jest": "20.0.3",
     "babel-loader": "7.1.1",
