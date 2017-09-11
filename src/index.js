@@ -1,6 +1,5 @@
-// @flow
-
 import './setup';
+import './config';
 import 'babel-register';
 import server from './server';
 

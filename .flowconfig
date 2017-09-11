@@ -17,3 +17,4 @@ flow-typed
 sharedmemory.hash_table_pow=21
 all=true
 module.ignore_non_literal_requires=true
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore

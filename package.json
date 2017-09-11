@@ -11,13 +11,18 @@
     "node": "6.11.0"
   },
   "scripts": {
+    "postinstall": "./node_modules/.bin/flow-typed install",
     "test": "NODE_ENV=test jest --forceExit --verbose",
-    "build": "gulp; DEBUG='api:*' node build",
-    "prod": "gulp; NODE_ENV='production' node build",
-    "forever": "NODE_ENV='production' forever start build",
+    "start:dev": "gulp build; node build",
+    "start:prod": "gulp build; NODE_ENV=production node build",
+    "start:forever": "NODE_ENV=production forever start build",
+    "gulp:build": "gulp build",
+    "gulp:watch": "gulp watch",
+    "gulp:flow": "gulp flow", 
+    "gulp": "gulp",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db",
-    "db:migrate": "node_modules/.bin/sequelize db:migrate",
+    "db:migrate": "./node_modules/.bin/sequelize db:migrate",
     "flow-assets": "./node_modules/.bin/flow-typed install",
     "lint": "./node_modules/.bin/eslint src/**/*.js"
   },
@@ -26,9 +31,9 @@
   "dependencies": {
     "bcryptjs": "2.4.3",
     "body-parser": "1.17.2",
-    "config": "1.26.1",
     "crypto": "0.0.3",
     "debug": "2.6.8",
+    "dotenv": "4.0.0",
     "dropbox": "2.5.7",
     "express": "4.15.3",
     "express-mung": "0.4.6",
@@ -48,9 +53,7 @@
     "path": "0.12.7",
     "response-time": "2.3.2",
     "sendgrid": "5.2.1",
-    "sequelize": "4.2.1"
-  },
-  "devDependencies": {
+    "sequelize": "4.2.1",
     "babel-eslint": "7.2.3",
     "babel-jest": "20.0.3",
     "babel-loader": "7.1.1",

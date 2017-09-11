@@ -1,7 +1,6 @@
 // @flow
 
 import jwt from 'jsonwebtoken';
-import config from 'config'
 import models from '../models';
 
 import { TokenExpirationError } from '../errors';
@@ -69,7 +68,7 @@ const getRecoveryTokenByValue = async function(value: string): Promise<?models.R
 
 const verifyToken = async function(token: models.Token | models.VerificationToken): Promise<Object> {
     return new Promise((resolve, reject) => {
-        return jwt.verify(token.value, config.get('auth.secret'), (err, decoded) => {
+        return jwt.verify(token.value, global.config.auth.secret, (err, decoded) => {
             if (err) {
                 if (err instanceof jwt.TokenExpiredError) {
                     token.destroy({ force: true });

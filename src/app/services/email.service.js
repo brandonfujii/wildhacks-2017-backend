@@ -2,14 +2,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import config from 'config';
 import SendGrid, { mail as helper } from 'sendgrid';
 import type { EmailResponse } from '../types';
 import { isEmail, randomToken } from '../utils';
 import { BadRequestError } from '../errors';
 
-const TEAM_EMAIL = process.env.TEAM_EMAIL || config.get('sendgrid.email');
-const SEND_GRID_API_KEY = process.env.SEND_GRID_API_KEY || config.get('sendgrid.key');
+const TEAM_EMAIL = global.config.sendgrid.email || 'team@wildhacks.org';
+const SEND_GRID_API_KEY = global.config.sendgrid.key;
 
 const readFromHtml = function(templateName: string): string {
     const pathToHtml = path.resolve(global.cwd, 'static/templates/', templateName);

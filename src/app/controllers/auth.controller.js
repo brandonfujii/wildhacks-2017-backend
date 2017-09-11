@@ -1,7 +1,6 @@
 // @flow
 
 import sequelize from 'sequelize';
-import config from 'config';
 import jwt from 'jsonwebtoken';
 
 import models from '../models';
@@ -20,11 +19,7 @@ import {
 
 /** 
  * Creates and returns a user instance based on given options
- * @param {object}            options
- * @param {String|undefined}  options.firstName
- * @param {String|undefined}  options.lastName 
- * @param {String}            options.email      
- * @param {String}            options.password    
+ * @param {object} options 
  * @returns {Promise<User, Error>} - returns a newly created
  * user if resolved; otherwise, throws an error and rollbacks
  * the user creation transaction
@@ -98,11 +93,7 @@ const verifyUser = async function(user: models.User, candidatePassword: string):
  * JSON Web Token when resolved; otherwise rejects an error
  */
 const _signToken = async function(user: models.User): Promise<string> {
-    const auth = config.get('auth');
-    const {
-        secret,
-        expiresIn
-    } = auth;
+    const { secret, expiresIn } = global.config.auth;
 
     return new Promise(async (resolve, reject) => {
         const {
@@ -116,9 +107,7 @@ const _signToken = async function(user: models.User): Promise<string> {
             email,
             privilege
         }, 
-        secret, {
-            expiresIn: expiresIn || '7d',
-        }, (err, token) => {
+        secret, { expiresIn }, (err, token) => {
             if (err != null) {
                 reject(err);
             }

@@ -9,3 +9,4 @@ static/resumes/*
 !static/resumes/.gitkeep
 .DS_Store
 .idea/
+.env

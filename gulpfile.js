@@ -50,4 +50,6 @@ gulp.task('watch', ['flow', 'scripts'], function() {
     gulp.watch(SOURCE_FILE_PATH, ['flow', 'scripts']);
 });
 
+gulp.task('build', ['scripts']);
+
 gulp.task('default', ['flow', 'scripts']);
