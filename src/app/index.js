@@ -78,6 +78,10 @@ export default class App {
             });
         });
 
+        this.express.get('/', (req: $Request, res: $Response) => {
+            res.send('App is running!');
+        });
+
         // Handle synchronous errors
         this.express.use(errorHandler);
     }
