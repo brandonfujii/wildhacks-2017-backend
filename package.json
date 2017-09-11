@@ -12,12 +12,12 @@
   },
   "scripts": {
     "test": "NODE_ENV=test jest --forceExit --verbose",
-    "build": "gulp; DEBUG='api:*' node build",
+    "build": "gulp; node build",
     "prod": "gulp; NODE_ENV='production' node build",
     "forever": "NODE_ENV='production' forever start build",
     "db:create": "node bin/create_db",
     "db:destroy": "node bin/drop_db",
-    "db:migrate": "node_modules/.bin/sequelize db:migrate",
+    "db:migrate": "./node_modules/.bin/sequelize db:migrate",
     "flow-assets": "./node_modules/.bin/flow-typed install",
     "lint": "./node_modules/.bin/eslint src/**/*.js"
   },
@@ -29,6 +29,7 @@
     "config": "1.26.1",
     "crypto": "0.0.3",
     "debug": "2.6.8",
+    "dotenv": "4.0.0",
     "dropbox": "2.5.7",
     "express": "4.15.3",
     "express-mung": "0.4.6",

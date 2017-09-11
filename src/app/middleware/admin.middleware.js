@@ -1,6 +1,5 @@
 // @flow
 
-import config from 'config';
 import {
     UnauthorizedError,
     ForbiddenError
@@ -8,7 +7,7 @@ import {
 
 /**
  * Middleware for routes that require admin privileges to access
- * @throws {ForbiddenError}     - if the requester's privilege is not admin or
+ * @throws {ForbiddenError} - if the requester's privilege is not admin or
  * the request does not contain a gatekey
  */
 const adminMiddleware = async function(req: $Request, res: $Response, next: express$NextFunction): Promise<void> {
@@ -20,7 +19,7 @@ const adminMiddleware = async function(req: $Request, res: $Response, next: expr
     }
 
     if (req.headers['x-access-gatekey']) {
-        const gatekey = config.get('auth.gatekey');
+        const gatekey = global.config.auth.gatekey;
 
         if (req.headers['x-access-gatekey'] === gatekey) {
             next();

@@ -4,29 +4,13 @@ import fs from 'fs';
 import _ from 'lodash';
 import path from 'path';
 import Sequelize from 'sequelize';
-import config from 'config';
 import debug from 'debug';
-import type { DatabaseConfig } from '../types';
 
 const log = debug('api:db');
 const basename = path.basename(module.filename);
-const env = process.env.NODE_ENV || 'development';
 
-const getSequelizeFile = function(): Object {
-    let cfg = {};
-
-    try {
-        cfg = require(`${config.util.getEnv('NODE_CONFIG_DIR')}/sequelize.json`);
-    } catch(err) {
-        log('Must provide a sequelize configuration file');
-        process.exit(1);
-    }
-
-    return cfg;
-};
-
-const configureDatabase = function(cfg: DatabaseConfig): Sequelize {
-    const database: Sequelize = new Sequelize(cfg.database, cfg.username, cfg.password, cfg);
+const configureDatabase = function(cfg: Object): Sequelize {
+    const database: Sequelize = new Sequelize(cfg.name, cfg.username, cfg.password, cfg);
 
     database.authenticate()
         .then(() => {
@@ -40,8 +24,8 @@ const configureDatabase = function(cfg: DatabaseConfig): Sequelize {
     return database;
 };
 
-const databaseConfig = getSequelizeFile()[env];
-const sequelize = configureDatabase(databaseConfig);
+const config = global.config.database || {};
+const sequelize = configureDatabase(config);
 let db: Object = {};
 
 fs.readdirSync(__dirname)

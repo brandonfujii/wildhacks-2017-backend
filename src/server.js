@@ -3,27 +3,16 @@
 import express from 'express';
 import * as http from 'http';
 import debug from 'debug';
-import config from 'config';
 import App from './app';
 
 const log = debug('api:server');
-const port: number = normalizePort(config.get('port'));
-const DEFAULT_PORT: number = 1851;
+const port = global.config.port;
 
 declare interface ErrnoError extends Error {
     errno?: number,
     code?: string,
     path?: string,
     syscall?: string
-}
-
-function normalizePort(p: number | string): number { 
-    let port: number = (typeof p === 'string') ? parseInt(p) : p;
-
-    if (port && isNaN(port)) return port;
-    if (port >= 0) return port;
-
-    return DEFAULT_PORT;
 }
 
 function onError(error: ErrnoError) {

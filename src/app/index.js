@@ -1,7 +1,6 @@
 // @flow
 
 import express from 'express';
-import config from 'config';
 import helmet from 'helmet';
 import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
@@ -35,7 +34,7 @@ export default class App {
 
     constructor() {
         this.express = express();
-        this.resumeStore = new UploadService(config.get('dropbox.access_token'));
+        this.resumeStore = new UploadService(global.config.dropbox.key);
         this.middleware();
         this.routes();
     }
