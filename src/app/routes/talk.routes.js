@@ -44,13 +44,7 @@ export default function(app: express$Application) {
 
         const talk = await talkController.getTalkById(talkId);
 
-        if (talk) {
-            res.json({
-                talk,
-            });
-        } else {
-            throw new NotFoundError('Talk was not found');
-        }
+        res.json({ talk });
     };
 
     const createTalk = async (req: $Request, res: $Response) => {

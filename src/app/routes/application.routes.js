@@ -32,13 +32,10 @@ export default function(app: express$Application, resumeStore: UploadService) {
         }
 
         const application = await appController.getApplicationByUserId(owner.id);
-
-        if (application) {
-            res.json({ application });
-        } else {
-            throw new NotFoundError('The user has not submitted an application');
-        }
-
+        
+        res.json({
+            application,
+        });
     };
 
     const updateApplication = async (req: $Request, res: $Response) => {

@@ -22,14 +22,7 @@ export default function(app: express$Application) {
         const eventId = parseInt(req.query.id);
         const event = await eventController.getEventById(eventId);
 
-        if (event) {
-            res.json({
-                event,
-            });
-
-        } else {
-            throw new NotFoundError('The requested event does not exist');
-        }
+        res.json({ event });
     };
 
     eventRouter.use(authMiddleware);

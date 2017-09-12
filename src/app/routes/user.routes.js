@@ -51,11 +51,7 @@ export default function(app: express$Application) {
             }
         }
 
-        if (user) {
-            res.json({ user });
-        } else {
-            throw new NotFoundError('The requested user does not exist');
-        }
+        res.json({ user });
     };
 
     const deleteUserById = async (req: $Request, res: $Response) => {

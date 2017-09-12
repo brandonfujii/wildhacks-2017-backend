@@ -53,13 +53,9 @@ export default function(app: express$Application) {
 
         if (team) {
             _obfuscateTeamEmails(team, requester);
-
-            res.json({
-                team,
-            });
-        } else {
-            throw new NotFoundError('Team was not found');
         }
+
+        res.json({ team });
     };
     
     const createOrJoinTeam = async (req: $Request, res: $Response) => {
