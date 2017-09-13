@@ -1,7 +1,6 @@
 flow-typed/
 node_modules/
 *.log
-test.tar
 build/
 config/*.json
 !config/*.template.json

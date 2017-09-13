@@ -45,6 +45,9 @@ export default function(
             as: 'upvoters',
             through: models.Upvote,
         });
+        Talk.belongsToMany(models.Tag, {
+            through: models.TalkTag
+        });
     };
 
     return Talk;

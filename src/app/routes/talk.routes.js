@@ -50,6 +50,7 @@ export default function(app: express$Application) {
     const createTalk = async (req: $Request, res: $Response) => {
         const name = req.body.name,
             description = req.body.description,
+            tags = req.body.tags,
             speaker = req.requester;
 
         if (!speaker || !speaker.id) {
@@ -64,15 +65,35 @@ export default function(app: express$Application) {
             throw new BadRequestError('Must provide a valid description string under 300 characters');
         }
 
-        const talk = await talkController.createTalk(speaker.id, name, description);
-
-        res.json({
-            talk,
+        const talk = await talkController.createTalk(speaker.id, {
+            name,
+            description,
+            tags,
         });
+
+        res.json({ talk });
+    };
+
+    const updateTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.params.id);
+        const options = req.body;
+        const speaker = req.requester;
+
+        if (!speaker || !speaker.id) {
+            throw new UnauthorizedError('You cannot upvote a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid talk id');
+        }
+
+        const talk = await talkController.updateTalk(talkId, speaker.id, options);
+
+        res.json({ talk });
     };
 
     const upvoteTalk = async (req: $Request, res: $Response) => {
-        const talkId = parseInt(req.body.talk_id);
+        const talkId = parseInt(req.params.id);
         const requester = req.requester;
 
         if (!requester || !requester.id) {
@@ -80,20 +101,19 @@ export default function(app: express$Application) {
         }
 
         if (!talkId) {
-            throw new BadRequestError('Must provide valid user id');
+            throw new BadRequestError('Must provide valid talk id');
         }
 
         const talk = await talkController.upvoteTalk(talkId, requester);
 
-        res.json({
-            talk,
-        });
+        res.json({ talk });
     };
 
     talkRouter.use(authMiddleware);
     talkRouter.get('/', wrap(getTalkById));
     talkRouter.get('/all', wrap(getTalkPage));
     talkRouter.post('/create', wrap(createTalk));
-    talkRouter.put('/upvote', wrap(upvoteTalk));
+    talkRouter.put('/:id', wrap(updateTalk));
+    talkRouter.put('/:id/upvote', wrap(upvoteTalk));
     app.use('/talk', talkRouter);
 }
