@@ -27,9 +27,13 @@ export default function(app: express$Application) {
             throw new BadRequestError('Please supply a valid integer page number greater than 1');
         }
 
-        const talks = await talkController.getTalks(pageNumber, limit);
+        const [talks, count] = await Promise.all([
+            talkController.getTalks(pageNumber, limit),
+            talkController.getCount(),
+        ]);
     
-        res.json({ 
+        res.json({
+            count,
             page: pageNumber,
             talks: talks ? talks : [],
         });

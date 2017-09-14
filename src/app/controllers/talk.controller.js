@@ -12,8 +12,25 @@ const getTalks = async function(pageNumber: number = 1, limit: number = 10): Pro
 
     return models.Talk.findAll({
         limit,
-        offset
+        offset,
+        include: [
+            {
+                model: models.User,
+                as: 'speaker',
+                attributes: ['email'],
+                include: [
+                    {
+                        model: models.Application,
+                        attributes: ['first_name', 'last_name', 'school'],
+                    }
+                ]
+            }
+        ]
     });
+};
+
+const getCount = async function(): Promise<number> {
+    return models.Talk.count();
 };
 
 const getTalkById = async function(talkId: number): Promise<?models.Talk> {
@@ -159,10 +176,8 @@ const createTalk = async function(speakerId: number, options: Object): Promise<m
             }
             
             resolve({
-                talk: {
-                    ...talk.toJSON(),
-                    tags,
-                },
+                ...talk.toJSON(),
+                tags,
             });
             await t.commit();
         } catch(err) {
@@ -322,6 +337,7 @@ const upvoteTalk = async function(talkId: number, requester: Object): Promise<mo
 
 export default {
     getTalks,
+    getCount,
     getTalkById,
     createTalk,
     updateTalk,
