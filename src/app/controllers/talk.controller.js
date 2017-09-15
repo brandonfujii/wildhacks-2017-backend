@@ -7,8 +7,15 @@ import { NotFoundError, ForbiddenError } from '../errors';
 
 export const VALID_TALK_PROPERTIES = ['name', 'description'];
 
-const getTalks = async function(pageNumber: number = 1, limit: number = 10): Promise<Array<models.Talk>> {
+const getTalks = async function(pageNumber: number = 1, limit: number = 10, orderBy: ?string): Promise<Array<models.Talk>> {
     const offset = pageNumber < 1 ? 0 : --pageNumber * limit; // zero-index page number
+    const order = [['updated_at', 'DESC']]; // order by most recenter
+
+    if (orderBy === 'popular') {
+        order.unshift([sequelize.literal('upvotes'), 'DESC']); // order by upvotes
+    }
+
+    console.log(order);
 
     return models.Talk.findAll({
         limit,
@@ -24,8 +31,21 @@ const getTalks = async function(pageNumber: number = 1, limit: number = 10): Pro
                         attributes: ['first_name', 'last_name', 'school'],
                     }
                 ]
+            },
+            {
+                model: models.Tag
             }
-        ]
+        ],
+        attributes: [
+            'id',
+            'name',
+            'description',
+            'speaker_id',
+            'created_at',
+            'updated_at',
+            [ sequelize.literal('(SELECT COUNT(*) FROM upvotes WHERE upvotes.talk_id = Talk.id)'), 'upvotes' ]
+        ],
+        order,
     });
 };
 

@@ -18,17 +18,16 @@ export default function(app: express$Application) {
     const talkRouter = express.Router();
 
     const getTalkPage = async (req: $Request, res: $Response) => {
-        const pageNumber = parseInt(req.query.page),
-            limit = parseInt(req.query.limit) 
+        let pageNumber = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit) 
                 ? parseInt(req.query.limit)
                 : undefined;
+        const order = req.query.order;
 
-        if (!pageNumber || pageNumber < 1) {
-            throw new BadRequestError('Please supply a valid integer page number greater than 1');
-        }
+        if (!pageNumber || pageNumber < 1) pageNumber = 1;
 
         const [talks, count] = await Promise.all([
-            talkController.getTalks(pageNumber, limit),
+            talkController.getTalks(pageNumber, limit, order),
             talkController.getCount(),
         ]);
     
