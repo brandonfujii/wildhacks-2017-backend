@@ -3,19 +3,15 @@
 import sequelize from 'sequelize';
 import models from '../models';
 import { pick, isArray } from 'lodash';
+import type { SuccessMessage } from '../types';
 import { NotFoundError, ForbiddenError } from '../errors';
 
 export const VALID_TALK_PROPERTIES = ['name', 'description'];
 
-const getTalks = async function(pageNumber: number = 1, limit: number = 10, orderBy: ?string): Promise<Array<models.Talk>> {
+const getTalks = async function(pageNumber: number = 1, limit: number = 10, orderBy: ?string, userId: number): Promise<Array<models.Talk>> {
     const offset = pageNumber < 1 ? 0 : --pageNumber * limit; // zero-index page number
-    const order = [['updated_at', 'DESC']]; // order by most recenter
-
-    if (orderBy === 'popular') {
-        order.unshift([sequelize.literal('upvotes'), 'DESC']); // order by upvotes
-    }
-
-    console.log(order);
+    const order = [['updated_at', 'DESC']]; // order by most recent
+    if (orderBy === 'popular') order.unshift([sequelize.literal('upvotes'), 'DESC']); // order by upvotes
 
     return models.Talk.findAll({
         limit,
@@ -34,6 +30,14 @@ const getTalks = async function(pageNumber: number = 1, limit: number = 10, orde
             },
             {
                 model: models.Tag
+            },
+            {
+                model: models.User,
+                as: 'upvoters',
+                attributes: ['id'],
+                through: {
+                    attributes: []
+                }
             }
         ],
         attributes: [
@@ -43,7 +47,8 @@ const getTalks = async function(pageNumber: number = 1, limit: number = 10, orde
             'speaker_id',
             'created_at',
             'updated_at',
-            [ sequelize.literal('(SELECT COUNT(*) FROM upvotes WHERE upvotes.talk_id = Talk.id)'), 'upvotes' ]
+            [ sequelize.literal('(SELECT COUNT(*) FROM upvotes WHERE upvotes.talk_id = Talk.id)'), 'upvotes' ],
+            [ sequelize.literal(`(SELECT COUNT(*) FROM upvotes WHERE upvotes.user_id = ${userId} AND upvotes.talk_id = Talk.id)`), 'hasUpvoted' ],
         ],
         order,
     });
@@ -318,14 +323,14 @@ const getTalkUpvote = async function(upvoterId: number, talkId: number): Promise
     });
 };
 
-const upvoteTalk = async function(talkId: number, requester: Object): Promise<models.Talk> {
+const upvoteTalk = async function(talkId: number, userId: number): Promise<models.Talk> {
     return new Promise(async (resolve, reject) => {
         const t = await models.sequelize.transaction();
 
         try {
             const [talk, existingUpvote] = await Promise.all([
                     getTalkById(talkId),
-                    getTalkUpvote(requester.id, talkId),
+                    getTalkUpvote(userId, talkId),
                 ]);
 
             if (talk) {
@@ -335,7 +340,7 @@ const upvoteTalk = async function(talkId: number, requester: Object): Promise<mo
 
                 const upvote = await models.Upvote.create({
                     talk_id: talk.id,
-                    user_id: requester.id,
+                    user_id: userId,
                 }, { transaction: t });
 
                 talk.upvoters.push({ 
@@ -355,6 +360,40 @@ const upvoteTalk = async function(talkId: number, requester: Object): Promise<mo
     });
 };
 
+const downvoteTalk = async function(talkId: number, userId: number): Promise<SuccessMessage> {
+    return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+
+        try {
+            const [talk, existingUpvote] = await Promise.all([
+                getTalkById(talkId),
+                getTalkUpvote(userId, talkId),
+            ]);
+
+            if (talk && existingUpvote) {
+                await models.Upvote.destroy({
+                    where: {
+                        talk_id: talkId,
+                        user_id: userId,
+                    },
+                });
+
+                resolve({
+                    success: true,
+                    message: null,
+                });
+                await t.commit();
+            } else {
+                throw new NotFoundError('Unable to downvote this talk');
+            }
+
+        } catch(err) {
+            reject(err);
+            await t.rollback();
+        }
+    });
+};
+
 export default {
     getTalks,
     getCount,
@@ -362,4 +401,5 @@ export default {
     createTalk,
     updateTalk,
     upvoteTalk,
+    downvoteTalk,
 };
