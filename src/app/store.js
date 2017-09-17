@@ -7,8 +7,7 @@ const { isProduction, cache } = global.config;
 const log = debug('api:redis');
 let client;
 
-console.log(isProduction, cache);
-if (cache && cache.url) {
+if (cache && cache.url && isProduction) {
     client = redis.createClient(cache.url);
 } else {
     client = redis.createClient();

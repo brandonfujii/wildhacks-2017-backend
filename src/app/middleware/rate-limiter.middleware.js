@@ -5,12 +5,12 @@ import { TooManyRequestsError, InternalServerError } from '../errors';
 import { stripToken } from '../utils';
 
 const rateLimitingMiddleware = (store: redis.client) => {
-    const rateLimitInterval = process.env.RATE_LIMIT_INTERVAL || 5000;
+    const rateLimitInterval = process.env.RATE_LIMIT_INTERVAL || 60000;
     const limiter = RateLimiter({
         redis: store,
         namespace: 'requestRateLimiter',
         interval: rateLimitInterval,
-        maxInInterval: process.env.RATE_LIMIT_MAX_IN_INTERVAL || 5,
+        maxInInterval: process.env.RATE_LIMIT_MAX_IN_INTERVAL || 100,
     });
     
     return (req: $Request, res: $Response, next: express$NextFunction) => {
@@ -21,7 +21,6 @@ const rateLimitingMiddleware = (store: redis.client) => {
             const key = stripToken(accessToken);
 
             limiter(key, (err, timeRemaining) => {
-                console.log(err, timeRemaining);
                 if (err != null) {
                     return next(new InternalServerError());
                 }            
