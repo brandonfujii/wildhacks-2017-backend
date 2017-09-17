@@ -21,6 +21,9 @@ var config = {
         key: process.env.SEND_GRID_API_KEY,
         email: process.env.TEAM_EMAIL,
     },
+    cache: {
+        url: process.env.REDIS_URL,
+    },
 };
 
 module.exports = config;

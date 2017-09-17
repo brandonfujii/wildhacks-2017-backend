@@ -6,8 +6,10 @@ import methodOverride from 'method-override';
 import bodyParser from 'body-parser';
 import responseTime from 'response-time';
 import Dropbox from 'dropbox';
+import redis from 'redis';
 
 import UploadService from './services/upload.service';
+import Store from './store';
 
 // Routes
 import { 
@@ -24,6 +26,7 @@ import {
 import {
     requestMiddleware,
     responseMiddleware,
+    rateLimitingMiddleware,
     httpMiddleware,
     errorHandler,
 } from './middleware';
@@ -31,10 +34,13 @@ import {
 export default class App {
     express: express$Application;
     resumeStore: Dropbox;
+    store: redis.client;
+    
 
     constructor() {
         this.express = express();
         this.resumeStore = new UploadService(global.config.dropbox.key);
+        this.store = Store;
         this.middleware();
         this.routes();
     }
@@ -58,6 +64,7 @@ export default class App {
         this.express.all('*', httpMiddleware);
         this.express.use(requestMiddleware);
         this.express.use(responseMiddleware);
+        this.express.use(rateLimitingMiddleware(this.store));
 
         // Routes
         ((app: express$Application) => {

@@ -18,18 +18,26 @@ export default function(app: express$Application) {
     const talkRouter = express.Router();
 
     const getTalkPage = async (req: $Request, res: $Response) => {
-        const pageNumber = parseInt(req.query.page),
-            limit = parseInt(req.query.limit) 
+        let pageNumber = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit) 
                 ? parseInt(req.query.limit)
                 : undefined;
+        const order = normalizeString(req.query.order);
+        const requester = req.requester;
 
-        if (!pageNumber || pageNumber < 1) {
-            throw new BadRequestError('Please supply a valid integer page number greater than 1');
+        if (!requester || !requester.id) {
+            throw UnauthorizedError('You cannot access talks without being signed in');
         }
 
-        const talks = await talkController.getTalks(pageNumber, limit);
+        if (!pageNumber || pageNumber < 1) pageNumber = 1;
+
+        const [talks, count] = await Promise.all([
+            talkController.getTalks(pageNumber, limit, order, requester.id),
+            talkController.getCount(),
+        ]);
     
-        res.json({ 
+        res.json({
+            count,
             page: pageNumber,
             talks: talks ? talks : [],
         });
@@ -50,6 +58,7 @@ export default function(app: express$Application) {
     const createTalk = async (req: $Request, res: $Response) => {
         const name = req.body.name,
             description = req.body.description,
+            tags = req.body.tags,
             speaker = req.requester;
 
         if (!speaker || !speaker.id) {
@@ -64,15 +73,52 @@ export default function(app: express$Application) {
             throw new BadRequestError('Must provide a valid description string under 300 characters');
         }
 
-        const talk = await talkController.createTalk(speaker.id, name, description);
-
-        res.json({
-            talk,
+        const talk = await talkController.createTalk(speaker.id, {
+            name,
+            description,
+            tags,
         });
+
+        res.json({ talk });
+    };
+
+    const deleteTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.params.id);
+        const speaker = req.requester;
+
+        if (!speaker || !speaker.id) {
+            throw new UnauthorizedError('You cannot delete a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid talk id');
+        }
+
+        const result = await talkController.deleteTalk(talkId, speaker.id);
+
+        res.json(result);
+    };
+
+    const updateTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.params.id);
+        const options = req.body;
+        const speaker = req.requester;
+
+        if (!speaker || !speaker.id) {
+            throw new UnauthorizedError('You cannot update a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid talk id');
+        }
+
+        const talk = await talkController.updateTalk(talkId, speaker.id, options);
+
+        res.json({ talk });
     };
 
     const upvoteTalk = async (req: $Request, res: $Response) => {
-        const talkId = parseInt(req.body.talk_id);
+        const talkId = parseInt(req.params.id);
         const requester = req.requester;
 
         if (!requester || !requester.id) {
@@ -80,20 +126,36 @@ export default function(app: express$Application) {
         }
 
         if (!talkId) {
-            throw new BadRequestError('Must provide valid user id');
+            throw new BadRequestError('Must provide valid talk id');
         }
 
-        const talk = await talkController.upvoteTalk(talkId, requester);
+        const talk = await talkController.upvoteTalk(talkId, requester.id);
+        res.json({ talk });
+    };
 
-        res.json({
-            talk,
-        });
+    const downvoteTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.params.id);
+        const requester = req.requester;
+
+        if (!requester || !requester.id) {
+            throw new UnauthorizedError('You cannot downvote a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid talk id');
+        }
+
+        const result = await talkController.downvoteTalk(talkId, requester.id);
+        res.json(result);
     };
 
     talkRouter.use(authMiddleware);
     talkRouter.get('/', wrap(getTalkById));
     talkRouter.get('/all', wrap(getTalkPage));
     talkRouter.post('/create', wrap(createTalk));
-    talkRouter.put('/upvote', wrap(upvoteTalk));
+    talkRouter.put('/:id', wrap(updateTalk));
+    talkRouter.delete('/:id', wrap(deleteTalk));
+    talkRouter.put('/:id/upvote', wrap(upvoteTalk));
+    talkRouter.delete('/:id/upvote', wrap(downvoteTalk));
     app.use('/talk', talkRouter);
 }

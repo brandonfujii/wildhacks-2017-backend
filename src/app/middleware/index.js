@@ -5,6 +5,7 @@ import requestMiddleware from './request.middleware';
 import authMiddleware from './auth.middleware';
 import adminMiddleware from './admin.middleware';
 import httpMiddleware from './http.middleware';
+import rateLimitingMiddleware from './rate-limiter.middleware';
 import errorHandler from './error.middleware';
 import wrap from './wrap.middleware';
 
@@ -13,5 +14,6 @@ module.exports.requestMiddleware = requestMiddleware;
 module.exports.authMiddleware = authMiddleware;
 module.exports.adminMiddleware = adminMiddleware;
 module.exports.httpMiddleware = httpMiddleware;
+module.exports.rateLimitingMiddleware = rateLimitingMiddleware;
 module.exports.errorHandler = errorHandler;
 module.exports.wrap = wrap;
