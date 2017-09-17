@@ -82,13 +82,30 @@ export default function(app: express$Application) {
         res.json({ talk });
     };
 
+    const deleteTalk = async (req: $Request, res: $Response) => {
+        const talkId = parseInt(req.params.id);
+        const speaker = req.requester;
+
+        if (!speaker || !speaker.id) {
+            throw new UnauthorizedError('You cannot delete a talk without being signed in');
+        }
+
+        if (!talkId) {
+            throw new BadRequestError('Must provide valid talk id');
+        }
+
+        const result = await talkController.deleteTalk(talkId, speaker.id);
+
+        res.json(result);
+    };
+
     const updateTalk = async (req: $Request, res: $Response) => {
         const talkId = parseInt(req.params.id);
         const options = req.body;
         const speaker = req.requester;
 
         if (!speaker || !speaker.id) {
-            throw new UnauthorizedError('You cannot upvote a talk without being signed in');
+            throw new UnauthorizedError('You cannot update a talk without being signed in');
         }
 
         if (!talkId) {
@@ -137,6 +154,7 @@ export default function(app: express$Application) {
     talkRouter.get('/all', wrap(getTalkPage));
     talkRouter.post('/create', wrap(createTalk));
     talkRouter.put('/:id', wrap(updateTalk));
+    talkRouter.delete('/:id', wrap(deleteTalk));
     talkRouter.put('/:id/upvote', wrap(upvoteTalk));
     talkRouter.delete('/:id/upvote', wrap(downvoteTalk));
     app.use('/talk', talkRouter);

@@ -313,6 +313,34 @@ const updateTalk = async function(talkId: number, speakerId: number, updatedAttr
     });
 };
 
+const deleteTalk = async function(talkId: number, speakerId: number): Promise<SuccessMessage> {
+    return new Promise(async (resolve, reject) => {
+        const t = await models.sequelize.transaction();
+
+        try {
+            let existingTalk = await getTalkById(talkId);
+
+            if (existingTalk) {
+                if (existingTalk.speaker_id === speakerId) {
+                    await existingTalk.destroy({
+                        force: true,
+                    }, { transaction: t });
+            
+                    resolve({ success: true, message: 'Talk was deleted' });
+                    await t.commit();
+                } else {
+                    throw new ForbiddenError('You do not have permission to delete this talk');
+                }
+            } else {
+                throw new NotFoundError('This talk does not exist');
+            }
+        } catch(err) {
+            reject(err);
+            await t.rollback();
+        }
+    });
+};
+
 const getTalkUpvote = async function(upvoterId: number, talkId: number): Promise<?models.Upvote> {
     return models.Upvote.findOne({
         where: {
@@ -400,6 +428,7 @@ export default {
     getTalkById,
     createTalk,
     updateTalk,
+    deleteTalk,
     upvoteTalk,
     downvoteTalk,
 };
