@@ -17,6 +17,7 @@ import InternalServerError from './internal-server.error';
 import NotFoundError from './not-found.error';
 import LoginError from './login.error';
 import TeamError from './team.error';
+import TooManyRequestsError from './too-many-requests.error';
 
 module.exports = {
     BaseError,
@@ -32,4 +33,5 @@ module.exports = {
     UnauthorizedError,
     TeamError,
     EntityAlreadyExistsError,
+    TooManyRequestsError,
 };
