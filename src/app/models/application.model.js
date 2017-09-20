@@ -36,16 +36,10 @@ export default function(
             type: INTEGER
         },
         first_name: {
-            type: STRING,
-            validate: {
-                isAlpha: true
-            },
+            type: STRING
         },
         last_name: {
-            type: STRING,
-            validate: {
-                isAlpha: true
-            },
+            type: STRING
         },
         age: {
             type: INTEGER,
