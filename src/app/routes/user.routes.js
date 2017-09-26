@@ -55,7 +55,7 @@ export default function(app: express$Application) {
     };
 
     const deleteUserById = async (req: $Request, res: $Response) => {
-        const userId = parseInt(req.body.user_id);
+        const userId = parseInt(req.params.id);
 
         if (!userId) {
             throw new BadRequestError('You must supply a valid user id');
@@ -85,7 +85,7 @@ export default function(app: express$Application) {
     userRouter.get('/', wrap(getSingleUser));
     userRouter.get('/all', wrap(getUserPage));
     userRouter.post('/check-in', adminMiddleware, wrap(checkUserIntoEvent))
-    userRouter.delete('/destroy', adminMiddleware, wrap(deleteUserById));
+    userRouter.delete('/:id', adminMiddleware, wrap(deleteUserById));
 
     app.use('/user', userRouter);
 }

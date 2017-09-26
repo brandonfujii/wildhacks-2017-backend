@@ -73,6 +73,7 @@
     "redis": "2.8.0",
     "response-time": "2.3.2",
     "rolling-rate-limiter": "0.1.10",
+    "semver": "5.4.1",
     "sendgrid": "5.2.1",
     "sequelize": "4.2.1",
     "sequelize-cli": "2.7.0",

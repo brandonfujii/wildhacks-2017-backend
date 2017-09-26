@@ -3,10 +3,10 @@
 const config = function() {
     return new Promise(function(resolve, reject) {
         try {
-            const sequelize = require('../config/sequelize.json');
+            const sequelize = require('../config/config.json');
             resolve(sequelize);
         } catch(err) {
-            reject(new Error('Cannot import sequelize file at /config/sequelize.json'));
+            reject(new Error('Cannot import sequelize file at /config/config.json'));
         }
 
     });
