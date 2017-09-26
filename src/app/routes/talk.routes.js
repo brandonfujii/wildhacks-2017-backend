@@ -61,6 +61,8 @@ export default function(app: express$Application) {
             tags = req.body.tags,
             speaker = req.requester;
 
+        console.log(description.length);
+
         if (!speaker || !speaker.id) {
             throw new UnauthorizedError('You cannot create a talk without being signed in');
         }
@@ -70,7 +72,7 @@ export default function(app: express$Application) {
         }
 
         if (typeof description !== 'string' || description.length > TALK_DESCRIPTION_CHAR_LIMIT) {
-            throw new BadRequestError('Must provide a valid description string under 300 characters');
+            throw new BadRequestError('Must provide a valid description string under 500 characters');
         }
 
         const talk = await talkController.createTalk(speaker.id, {
