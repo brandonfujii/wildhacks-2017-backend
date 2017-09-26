@@ -12,7 +12,7 @@ import {
 } from '../errors';
 
 const TALK_NAME_CHAR_LIMIT = 50;
-const TALK_DESCRIPTION_CHAR_LIMIT = 300;
+const TALK_DESCRIPTION_CHAR_LIMIT = 500;
 
 export default function(app: express$Application) {
     const talkRouter = express.Router();
