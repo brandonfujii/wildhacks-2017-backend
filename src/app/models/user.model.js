@@ -158,7 +158,6 @@ export default function(
 
     User.beforeUpdate(async function(user: User, options: User.options): Promise<void> {
         const modifiedKeys = Object.keys(user._changed);
-
         if (modifiedKeys.includes('password')) {
             const hash = await hashPassword(user.password);
 

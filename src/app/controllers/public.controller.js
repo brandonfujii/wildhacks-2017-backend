@@ -30,15 +30,6 @@ const getUsers = async function(pageNumber: number = 1, limit: ?number): Promise
         include: [
             {
                 model: models.Application,
-                include: [{
-                    model: models.Skill,
-                    attributes: {
-                        exclude: SKILL_ATTRIBUTE_BLACKLIST,
-                    },
-                    through: {
-                        attributes: []
-                    }
-                }],
                 attributes: {
                     exclude: APPLICATION_ATTRIBUTE_BLACKLIST,
                 },

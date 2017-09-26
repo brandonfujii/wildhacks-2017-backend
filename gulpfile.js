@@ -3,6 +3,8 @@ const babel = require('gulp-babel');
 const chalk = require('chalk');
 const flow = require('child_process').spawn(`node_modules/.bin/flow`);
 const sourcemaps = require('gulp-sourcemaps');
+const semver = require('semver');
+const pkg = require('./package.json');
 
 const SOURCE_FILE_PATH = 'src/**/*.js';
 const BUILD_PATH = 'build';
@@ -46,10 +48,21 @@ gulp.task('flow', function(done) {
     });
 });
 
-gulp.task('watch', ['flow', 'scripts'], function() {
+gulp.task('check-version', function() {
+    const actual = semver.valid(process.version);
+    const expected = semver.validRange(pkg.engines.node) || "6.11.0";
+    
+    if (!semver.satisfies(actual, expected)) {
+        console.warn(chalk.red(`Wrong node version. Expected version ${expected}, but received version ${actual}`));
+        process.exit(1);
+    }
+
+});
+
+gulp.task('watch', ['flow', 'check-version', 'scripts'], function() {
     gulp.watch(SOURCE_FILE_PATH, ['flow', 'scripts']);
 });
 
-gulp.task('build', ['scripts']);
+gulp.task('build', ['check-version', 'scripts']);
 
-gulp.task('default', ['flow', 'scripts']);
+gulp.task('default', ['flow', 'check-version', 'scripts']);
