@@ -198,11 +198,60 @@ const getEvents = async function(pageNumber: number = 1, limit: ?number): Promis
             reject(err);
         }
     });
+};
 
+const getTalksWithLimit = async function(limit: number, offset: number, options: Object): Promise<Array<models.Talk>> {
+    return models.Talk.findAll({
+        limit,
+        offset,
+        ...options,
+    });
+};
+
+const getAllTalks = async function(options: Object): Promise<Array<models.Talk>> {
+    return models.Talk.findAll(options);
+};
+
+const getTalks = async function(pageNumber: number = 1, limit: ?number): Promise<Object> {
+    const options = {
+        attributes: {
+            exclude: TALK_ATTRIBUTE_BLACKLIST,
+        },
+    };
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (limit) {
+                const offset = pageNumber < 1 ? 0 : (pageNumber - 1) * limit;            
+                const [events, count] = await Promise.all([
+                    getTalksWithLimit(limit, offset, options),
+                    models.Event.count(),
+                ]);
+
+                resolve({
+                    page: pageNumber,
+                    pageSize: limit,
+                    totalPages: Math.ceil(count / limit),
+                    count,
+                    events,
+                });
+            } else {
+                const events = await getAllTalks(options);
+
+                resolve({
+                    count: events.length,
+                    events,
+                });
+            }
+        } catch(err) {
+            reject(err);
+        }
+    });
 };
 
 export default {
   getUsers,
   getTeams,
   getEvents,
+  getTalks,
 };

@@ -79,6 +79,7 @@
     "sequelize-cli": "2.7.0",
     "superagent": "3.5.2",
     "supertest": "3.0.0",
+    "uuid": "3.1.0",
     "webpack": "3.5.5"
   }
 }
