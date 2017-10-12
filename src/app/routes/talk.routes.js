@@ -61,8 +61,6 @@ export default function(app: express$Application) {
             tags = req.body.tags,
             speaker = req.requester;
 
-        console.log(description.length);
-
         if (!speaker || !speaker.id) {
             throw new UnauthorizedError('You cannot create a talk without being signed in');
         }
