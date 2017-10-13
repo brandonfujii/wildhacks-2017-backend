@@ -23,7 +23,12 @@ const getCompleteUserData = async function(limit: number = 10, offset: number): 
         limit,
         offset,
         include: [
-            { model: models.Application },
+            { 
+                model: models.Application,
+                include: [
+                    { model: models.Resume },
+                ]
+            },
             { model: models.Talk },
             { model: models.Team }
         ],
