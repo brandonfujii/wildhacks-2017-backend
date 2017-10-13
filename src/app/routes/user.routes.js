@@ -3,19 +3,9 @@
 import express from 'express';
 
 import userController from '../controllers/user.controller';
-import { 
-    normalizeString,
-    isEmail, 
-} from '../utils';
-import { 
-    wrap,
-    authMiddleware,
-    adminMiddleware,
-} from '../middleware';
-import {
-    BadRequestError,
-    NotFoundError,
-} from '../errors';
+import { normalizeString, isEmail } from '../utils';
+import { wrap, authMiddleware, adminMiddleware } from '../middleware';
+import { BadRequestError, NotFoundError } from '../errors';
 
 export default function(app: express$Application) {
     const userRouter = express.Router();
@@ -27,6 +17,16 @@ export default function(app: express$Application) {
         if (!pageNumber || pageNumber < 1) pageNumber = 1;
 
         const userPage = await userController.getUserPage(pageNumber, limit);
+        res.json(userPage);
+    };
+
+    const getUserDataPage = async (req: $Request, res: $Response) => {
+        let pageNumber = parseInt(req.query.page),
+            limit = parseInt(req.query.limit) ? parseInt(req.query.limit) : undefined;
+
+        if (!pageNumber || pageNumber < 1) pageNumber = 1;
+
+        const userPage = await userController.getUserDataPage(pageNumber, limit);
         res.json(userPage);
     };
 
@@ -84,6 +84,7 @@ export default function(app: express$Application) {
     userRouter.use(authMiddleware);
     userRouter.get('/', wrap(getSingleUser));
     userRouter.get('/all', wrap(getUserPage));
+    userRouter.get('/info/all', adminMiddleware, wrap(getUserDataPage));
     userRouter.post('/check-in', adminMiddleware, wrap(checkUserIntoEvent))
     userRouter.delete('/:id', adminMiddleware, wrap(deleteUserById));
 

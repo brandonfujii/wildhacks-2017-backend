@@ -8,10 +8,30 @@ import eventController from './event.controller';
 import type { SuccessMessage } from '../types';
 import { NotFoundError } from '../errors';
 
+const VALID_SORT_ATTRIBUTES = ['first_name', 'last_name', 'school', 'grad_year'];
+
 const getUsers = async function(limit: number = 10, offset: number): Promise<Array<models.User>> {
     return models.User.findAll({
         limit,
         offset
+    });
+};
+
+// Gets user instances including related application, teams, talks
+const getCompleteUserData = async function(limit: number = 10, offset: number): Promise<Array<models.User>> {
+    return models.User.findAll({
+        limit,
+        offset,
+        include: [
+            { model: models.Application },
+            { model: models.Talk },
+            { model: models.Team }
+        ],
+        where: {
+            application_id: {
+                $ne: null,
+            }
+        }
     });
 };
 
@@ -33,6 +53,29 @@ const getUserPage = async function(pageNumber: number = 1, limit: number = 10): 
         try {
             const [users, count] = await Promise.all([
                 getUsers(limit, offset),
+                getUserCount(),
+            ]);
+
+            resolve({
+                page: pageNumber,
+                pageSize: limit,
+                totalPages: Math.ceil(count / limit),
+                totalUsers: count,
+                users: users ? users : [],
+            });
+        } catch(err) {
+            reject(err);
+        }
+    });
+};
+
+const getUserDataPage = async function(pageNumber: number = 1, limit: number = 10): Promise<Object> {
+    const offset = pageNumber < 1 ? 0 : (pageNumber - 1) * limit;
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            const [users, count] = await Promise.all([
+                getCompleteUserData(limit, offset),
                 getUserCount(),
             ]);
 
@@ -191,6 +234,7 @@ const checkInToEvent = async function(eventId: number, userId: number): Promise<
 export default {
     getUserCount,
     getUserPage,
+    getUserDataPage,
     getUserByIdAndEmail,
     getUserByEmail,
     getUserById,
