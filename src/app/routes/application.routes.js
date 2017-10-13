@@ -80,6 +80,27 @@ export default function(app: express$Application, resumeStore: UploadService) {
         });
     };
 
+    const bulkJudgeApplication = async (req: $Request, res: $Response) => {
+        const applicationIds = req.body.application_ids;
+        const decision = typeof req.body.decision === 'string'
+            ? req.body.decision.toLowerCase()
+            : null;
+
+        if (!_.isArray(applicationIds)) {
+            throw new BadRequestError('Must provide an array of application ids');
+        }
+
+        if (!decision || !VALID_DECISIONS.includes(decision)) {
+            throw new BadRequestError('Must provide a valid decision string');
+        }
+
+        const applications = await appController.bulkJudgeApplication(applicationIds, decision);
+
+        res.json({
+            success: true,
+        });
+    };
+
     const updateRsvp = async (req: $Request, res: $Response) => {
         const owner = req.requester;
         const rsvp = typeof req.body.rsvp === 'string'
@@ -106,6 +127,7 @@ export default function(app: express$Application, resumeStore: UploadService) {
     appRouter.get('/', wrap(getApplicationByUserId));
     appRouter.put('/update', resumeStore.multer().single('resume'), wrap(updateApplication));
     appRouter.put('/judge', adminMiddleware, wrap(judgeApplication));
+    appRouter.put('/judge/all', adminMiddleware, wrap(bulkJudgeApplication));
     appRouter.put('/rsvp', wrap(updateRsvp));
     app.use('/application', appRouter);
 }

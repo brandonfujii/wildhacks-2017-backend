@@ -165,7 +165,6 @@ const judgeApplication = async function(applicationId: number, decision: string)
                     }, { transaction: t, });
 
                     resolve(updatedApplication);
-
                     await t.commit();
 
                 } else {
@@ -179,6 +178,34 @@ const judgeApplication = async function(applicationId: number, decision: string)
         }
     });
 };
+
+const bulkJudgeApplication = async function(applicationIds: Array<number>, decision: string): Promise<Boolean> {
+    return new Promise(async (resolve, reject) => {
+        if (VALID_DECISIONS.includes(decision)) {
+            const t = await models.sequelize.transaction();
+
+            try {
+                await models.Application.update({
+                    decision,
+                }, {
+                    transaction: t,                    
+                    where: {
+                        id: applicationIds
+                    },
+                });
+
+                resolve(true);
+
+                await t.commit();
+
+            } catch(err) {
+                reject(err);
+                await t.rollback();
+            }
+        }
+    });
+};
+
 
 const updateRsvp = async function(userId: number, rsvpValue: string): Promise<?models.Application> {
     return new Promise(async (resolve, reject) => {
@@ -214,5 +241,6 @@ export default {
     getApplicationByUserId,
     handleApplicationAndResume,
     judgeApplication,
+    bulkJudgeApplication,
     updateRsvp,
 };
