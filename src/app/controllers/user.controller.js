@@ -19,7 +19,7 @@ const getUsers = async function(limit: number = 10, offset: number): Promise<Arr
 
 // Gets user instances including related application, teams, talks
 const getCompleteUserData = async function(limit: number = 10, offset: number): Promise<Array<models.User>> {
-    return models.User.findAll({
+    return models.User.findAndCountAll({
         limit,
         offset,
         include: [
@@ -79,17 +79,14 @@ const getUserDataPage = async function(pageNumber: number = 1, limit: number = 1
 
     return new Promise(async (resolve, reject) => {
         try {
-            const [users, count] = await Promise.all([
-                getCompleteUserData(limit, offset),
-                getUserCount(),
-            ]);
-
+            const result = await getCompleteUserData(limit, offset);
+            
             resolve({
                 page: pageNumber,
                 pageSize: limit,
-                totalPages: Math.ceil(count / limit),
-                totalUsers: count,
-                users: users ? users : [],
+                totalPages: Math.ceil(result.count / limit),
+                totalUsers: result.count,
+                users: result.rows || [],
             });
         } catch(err) {
             reject(err);
