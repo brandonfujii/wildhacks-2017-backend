@@ -33,6 +33,15 @@ const getApplicationByUserId = async function(userId: number): Promise<?models.A
   });
 };
 
+const getAcceptedCount = async function(): Promise<Object> {
+    return models.Application.count({
+        where: {
+            decision: "accepted",
+        }
+    });
+};
+
+
 const _saveApplication = async function(t: sequelize.Transaction, userId: number, options: Object): Promise<?models.User> {
     return new Promise(async (resolve, reject) => {
         try {
@@ -243,4 +252,5 @@ export default {
     judgeApplication,
     bulkJudgeApplication,
     updateRsvp,
+    getAcceptedCount,
 };

@@ -123,11 +123,21 @@ export default function(app: express$Application, resumeStore: UploadService) {
         });
     };
 
+    const getAcceptedCount = async (req: $Request, res: $Response) => {
+        const result = await appController.getAcceptedCount();
+        res.json({
+            count: result
+        });
+    };
+
+
     appRouter.use(authMiddleware);
     appRouter.get('/', wrap(getApplicationByUserId));
     appRouter.put('/update', resumeStore.multer().single('resume'), wrap(updateApplication));
     appRouter.put('/judge', adminMiddleware, wrap(judgeApplication));
     appRouter.put('/judge/all', adminMiddleware, wrap(bulkJudgeApplication));
     appRouter.put('/rsvp', wrap(updateRsvp));
+    appRouter.get('/accepted', wrap(getAcceptedCount));
+
     app.use('/application', appRouter);
 }
