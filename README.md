@@ -3,9 +3,8 @@
 ## Installation
   1. Clone this repository
   2. Make sure you have node version `6.11.0`. You can manage node versions with [nvm](https://github.com/creationix/nvm) if you already have node and npm. Otherwise, download [node](https://nodejs.org/en/) and [npm](https://github.com/npm/npm). You can check your node and npm versions by running `node -v` and `npm -v`.
-  3. Once you have a valid version of node, `npm install` in the root project directory to download the project's dependencies.
-  4. Run `npm run flow-assets` to generate flow-compatible node libraries from your `node_modules`.
-  5. Acquire a `.env` file from a WildHacks team member, or email brandonfujii2018@u.northwestern.edu, and place it in the root of the project.
+  3. Once you have a valid version of node, `npm install` in the root project directory to download the project's dependencies and its flow-compatible counterparts.
+  4. Acquire a `.env` and a `config` file from a WildHacks team member, or email brandonfujii2018@u.northwestern.edu, and place it in the root of the project.
 
 ## Local development
 ### Database
