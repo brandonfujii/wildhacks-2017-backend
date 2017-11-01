@@ -81,12 +81,12 @@ export default function(app: express$Application) {
         res.json(result);
     };
 
-    userRouter.use(authMiddleware);
-    userRouter.get('/', wrap(getSingleUser));
-    userRouter.get('/all', wrap(getUserPage));
     userRouter.get('/info/all', adminMiddleware, wrap(getUserDataPage));
     userRouter.post('/check-in', adminMiddleware, wrap(checkUserIntoEvent))
     userRouter.delete('/:id', adminMiddleware, wrap(deleteUserById));
+    userRouter.use(authMiddleware);
+    userRouter.get('/', wrap(getSingleUser));
+    userRouter.get('/all', wrap(getUserPage));
 
     app.use('/user', userRouter);
 }

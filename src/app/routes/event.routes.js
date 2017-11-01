@@ -4,7 +4,7 @@ import express from 'express';
 
 import eventController from '../controllers/event.controller';
 
-import { authMiddleware, wrap } from '../middleware';
+import { wrap, adminMiddleware } from '../middleware';
 import { NotFoundError } from '../errors';
 
 export default function(app: express$Application) {
@@ -12,8 +12,8 @@ export default function(app: express$Application) {
 
     const getEventPage = async (req: $Request, res: $Response) => {
         const events = await eventController.getEvents();
-    
-        res.json({ 
+
+        res.json({
             events: events ? events : [],
         });
     };
@@ -25,7 +25,7 @@ export default function(app: express$Application) {
         res.json({ event });
     };
 
-    eventRouter.use(authMiddleware);
+    eventRouter.use(adminMiddleware);
     eventRouter.get('/', wrap(getEventById));
     eventRouter.get('/all', wrap(getEventPage));
 
