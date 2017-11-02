@@ -7,6 +7,30 @@ import { normalizeString, isEmail } from '../utils';
 import { wrap, authMiddleware, adminMiddleware } from '../middleware';
 import { BadRequestError, NotFoundError } from '../errors';
 
+const getSingleUser = async (req: $Request, res: $Response) => {
+    const email = normalizeString(req.query.email);
+    const userId = parseInt(req.query.id);
+    let user = null;
+
+    if (email && userId) {
+        user = await userController.getUserByIdAndEmail(userId, email);
+    } else {
+        if (!email && !userId) {
+            throw new BadRequestError('Please supply either a valid email or id parameter');
+        }
+
+        if (email) {
+            user = await userController.getUserByEmail(email);
+        }
+
+        if (userId) {
+            user = await userController.getUserById(userId);
+        }
+    }
+
+    res.json({ user });
+};
+
 export default function(app: express$Application) {
     const userRouter = express.Router();
 
@@ -28,30 +52,6 @@ export default function(app: express$Application) {
 
         const userPage = await userController.getUserDataPage(pageNumber, limit);
         res.json(userPage);
-    };
-
-    const getSingleUser = async (req: $Request, res: $Response) => {
-        const email = normalizeString(req.query.email);
-        const userId = parseInt(req.query.id);
-        let user = null;
-
-        if (email && userId) {
-            user = await userController.getUserByIdAndEmail(userId, email);
-        } else {
-            if (!email && !userId) {
-                throw new BadRequestError('Please supply either a valid email or id parameter');
-            }
-
-            if (email) {
-                user = await userController.getUserByEmail(email);
-            }
-
-            if (userId) {
-                user = await userController.getUserById(userId);
-            }
-        }
-
-        res.json({ user });
     };
 
     const deleteUserById = async (req: $Request, res: $Response) => {
@@ -90,3 +90,5 @@ export default function(app: express$Application) {
 
     app.use('/user', userRouter);
 }
+
+export { getSingleUser };
