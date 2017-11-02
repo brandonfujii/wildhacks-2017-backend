@@ -10,6 +10,7 @@ import {
     adminMiddleware
 } from '../middleware';
 import { BadRequestError } from '../errors';
+import { getSingleUser } from './user.routes'
 
 export default function(app: express$Application) {
     const adminRouter = express.Router();
@@ -37,5 +38,6 @@ export default function(app: express$Application) {
     adminRouter.use(authMiddleware);
     adminRouter.use(adminMiddleware);
     adminRouter.post('/register', wrap(registerAdmin));
+    adminRouter.get('/user', wrap(getSingleUser))
     app.use('/admin', adminRouter)
 }
