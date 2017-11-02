@@ -12,7 +12,14 @@ CREATE TABLE IF NOT EXISTS `events` (
 INSERT INTO `events`
     (`id`, `name`, `meta_value`, `description`, `created_at`, `updated_at`) 
     VALUES 
-        (DEFAULT, "Dinner - Day 1", "day-1-dinner", "", now(), now()),
-        (DEFAULT, "Breakfast - Day 2", "day-2-breakfast", "", now(), now()),
-        (DEFAULT, "Lunch - Day 2", "day-2-lunch", "", now(), now()),
-        (DEFAULT, "Dinner - Day 2", "day-2-dinner", "", now(), now());
+        (DEFAULT, "Day 1 Registration", "day-1-registration", "", now(), now()),
+        (DEFAULT, "Career Fair", "career-fair", "", now(), now()),
+        (DEFAULT, "Day 1 Dinner", "day-1-dinner", "", now(), now()),
+        (DEFAULT, "Day 1 Midnight Snack", "day-1-midnight-snack", "", now(), now(),
+        (DEFAULT, "Beginner Workshop", "beginner-workshop", "", now(), now(),
+        (DEFAULT, "Day 2 Breakfast", "day-2-breakfast", "", now(), now(),
+        (DEFAULT, "Gameroom", "gameroom", "", now(), now(),
+        (DEFAULT, "Day 2 Dinner", "day-2-dinner", "", now(), now(),
+        (DEFAULT, "Day 2 Midnight Snack", "day-2-midnight-snack", "", now(), now(),
+        (DEFAULT, "Cup stacking", "cup-stacking", "", now(), now(),
+        (DEFAULT, "Day 3 Brunch", "day-3-brunch", "", now(), now());
