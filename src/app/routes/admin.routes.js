@@ -35,7 +35,6 @@ export default function(app: express$Application) {
         });
     };
 
-    adminRouter.use(authMiddleware);
     adminRouter.use(adminMiddleware);
     adminRouter.post('/register', wrap(registerAdmin));
     adminRouter.get('/user', wrap(getSingleUser))
