@@ -84,8 +84,8 @@ export default function(app: express$Application) {
     userRouter.get('/info/all', adminMiddleware, wrap(getUserDataPage));
     userRouter.post('/check-in', adminMiddleware, wrap(checkUserIntoEvent))
     userRouter.delete('/:id', adminMiddleware, wrap(deleteUserById));
+    userRouter.get('/', adminMiddleware, wrap(getSingleUser));
     userRouter.use(authMiddleware);
-    userRouter.get('/', wrap(getSingleUser));
     userRouter.get('/all', wrap(getUserPage));
 
     app.use('/user', userRouter);
