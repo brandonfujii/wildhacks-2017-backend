@@ -8,6 +8,12 @@ var config = {
         password: process.env.DATABASE_PASSWORD,
         host: process.env.DATABASE_HOST || '127.0.0.1',
         dialect: 'mysql',
+        pool: {
+            max: 10,
+            min: 0,
+            idle: 20000,
+            acquire: 20000
+        }
     },
     auth: {
         gatekey: process.env.AUTH_GATEKEY,
